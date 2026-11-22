@@ -3,6 +3,8 @@
 本仓库的 GitHub `main` 是 Y4、Y12 共用的内核开发和构建入口。整机版本和验证边界见 [Y4/Y12 开发交接](https://github.com/opencecs/myt-edge/blob/main/docs/DEVELOPMENT-HANDOFF.md)。
 M50 和 RK182X 主机驱动由两板共用。RK182X 的 PCI ID 匹配且 probe 成功后，每张卡有一个 `/dev/pcie-rkep-<BDF>`。容器按 PCI 地址选择设备。现行接口见 [RK182X 主机驱动说明](drivers/misc/rockchip-rkep/MYT-INTEGRATION.md)。
 
+[支持的硬件](https://github.com/opencecs/myt-edge/blob/main/docs/PLATFORM-OVERVIEW.md)和[整机开发手册](https://github.com/opencecs/myt-edge/blob/main/docs/DEVELOPMENT-HANDOFF.md)说明两种板型的适用场景、各仓库分工和跨仓库验证流程。
+
 ## Y4 / Y12 编译与板型分工
 
 同一套 CIX Linux 6.6.89 源码服务 Y4、Y12。公共核心板配置位于
