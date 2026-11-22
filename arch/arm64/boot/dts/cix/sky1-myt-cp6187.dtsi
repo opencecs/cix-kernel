@@ -1,0 +1,243 @@
+// SPDX-License-Identifier: BSD-3-Clause
+
+/* CP6187 exposes eight Cortex-A720 cores. Drop the four A520 nodes so
+ * arm64 never requests them through PSCI, and rebuild the CPU/PMU map.
+ */
+/delete-node/ &CPU0;
+/delete-node/ &CPU1;
+/delete-node/ &CPU2;
+/delete-node/ &CPU3;
+/delete-node/ &pmu_a520;
+
+&dsu_pmu {
+	cpus = <&CPU4>, <&CPU5>, <&CPU6>, <&CPU7>,
+		<&CPU8>, <&CPU9>, <&CPU10>, <&CPU11>;
+};
+
+&cpu_map {
+	/delete-node/ cluster0;
+	cluster0 {
+		core0 { cpu = <&CPU4>; };
+		core1 { cpu = <&CPU5>; };
+		core2 { cpu = <&CPU6>; };
+		core3 { cpu = <&CPU7>; };
+	};
+	cluster1 {
+		core0 { cpu = <&CPU8>; };
+		core1 { cpu = <&CPU9>; };
+		core2 { cpu = <&CPU10>; };
+		core3 { cpu = <&CPU11>; };
+	};
+};
+
+/ {
+	/* CP6187: geometry read from CCSIDR_EL1 on all eight A720 cores.
+	 * Private 512 KiB L2; shared 12 MiB L3 (also specified in CP6187 DS).
+	 * No cache-control registers or firmware-selected clocks are changed.
+	 */
+	cpus {
+		y4_l3_cache: l3-cache {
+			compatible = "cache";
+			cache-level = <3>;
+			cache-unified;
+			cache-size = <12582912>;
+			cache-line-size = <64>;
+			cache-sets = <16384>;
+		};
+		y4_l2_4: l2-cache4 {
+			compatible = "cache";
+			cache-level = <2>;
+			cache-unified;
+			cache-size = <524288>;
+			cache-line-size = <64>;
+			cache-sets = <1024>;
+			next-level-cache = <&y4_l3_cache>;
+		};
+		y4_l2_5: l2-cache5 {
+			compatible = "cache";
+			cache-level = <2>;
+			cache-unified;
+			cache-size = <524288>;
+			cache-line-size = <64>;
+			cache-sets = <1024>;
+			next-level-cache = <&y4_l3_cache>;
+		};
+		y4_l2_6: l2-cache6 {
+			compatible = "cache";
+			cache-level = <2>;
+			cache-unified;
+			cache-size = <524288>;
+			cache-line-size = <64>;
+			cache-sets = <1024>;
+			next-level-cache = <&y4_l3_cache>;
+		};
+		y4_l2_7: l2-cache7 {
+			compatible = "cache";
+			cache-level = <2>;
+			cache-unified;
+			cache-size = <524288>;
+			cache-line-size = <64>;
+			cache-sets = <1024>;
+			next-level-cache = <&y4_l3_cache>;
+		};
+		y4_l2_8: l2-cache8 {
+			compatible = "cache";
+			cache-level = <2>;
+			cache-unified;
+			cache-size = <524288>;
+			cache-line-size = <64>;
+			cache-sets = <1024>;
+			next-level-cache = <&y4_l3_cache>;
+		};
+		y4_l2_9: l2-cache9 {
+			compatible = "cache";
+			cache-level = <2>;
+			cache-unified;
+			cache-size = <524288>;
+			cache-line-size = <64>;
+			cache-sets = <1024>;
+			next-level-cache = <&y4_l3_cache>;
+		};
+		y4_l2_10: l2-cache10 {
+			compatible = "cache";
+			cache-level = <2>;
+			cache-unified;
+			cache-size = <524288>;
+			cache-line-size = <64>;
+			cache-sets = <1024>;
+			next-level-cache = <&y4_l3_cache>;
+		};
+		y4_l2_11: l2-cache11 {
+			compatible = "cache";
+			cache-level = <2>;
+			cache-unified;
+			cache-size = <524288>;
+			cache-line-size = <64>;
+			cache-sets = <1024>;
+			next-level-cache = <&y4_l3_cache>;
+		};
+	};
+};
+
+&CPU4 {
+	i-cache-size = <65536>;
+	i-cache-line-size = <64>;
+	i-cache-sets = <256>;
+	d-cache-size = <65536>;
+	d-cache-line-size = <64>;
+	d-cache-sets = <256>;
+	next-level-cache = <&y4_l2_4>;
+};
+
+&CPU5 {
+	i-cache-size = <65536>;
+	i-cache-line-size = <64>;
+	i-cache-sets = <256>;
+	d-cache-size = <65536>;
+	d-cache-line-size = <64>;
+	d-cache-sets = <256>;
+	next-level-cache = <&y4_l2_5>;
+};
+
+&CPU6 {
+	i-cache-size = <65536>;
+	i-cache-line-size = <64>;
+	i-cache-sets = <256>;
+	d-cache-size = <65536>;
+	d-cache-line-size = <64>;
+	d-cache-sets = <256>;
+	next-level-cache = <&y4_l2_6>;
+};
+
+&CPU7 {
+	i-cache-size = <65536>;
+	i-cache-line-size = <64>;
+	i-cache-sets = <256>;
+	d-cache-size = <65536>;
+	d-cache-line-size = <64>;
+	d-cache-sets = <256>;
+	next-level-cache = <&y4_l2_7>;
+};
+
+&CPU8 {
+	i-cache-size = <65536>;
+	i-cache-line-size = <64>;
+	i-cache-sets = <256>;
+	d-cache-size = <65536>;
+	d-cache-line-size = <64>;
+	d-cache-sets = <256>;
+	next-level-cache = <&y4_l2_8>;
+};
+
+&CPU9 {
+	i-cache-size = <65536>;
+	i-cache-line-size = <64>;
+	i-cache-sets = <256>;
+	d-cache-size = <65536>;
+	d-cache-line-size = <64>;
+	d-cache-sets = <256>;
+	next-level-cache = <&y4_l2_9>;
+};
+
+&CPU10 {
+	i-cache-size = <65536>;
+	i-cache-line-size = <64>;
+	i-cache-sets = <256>;
+	d-cache-size = <65536>;
+	d-cache-line-size = <64>;
+	d-cache-sets = <256>;
+	next-level-cache = <&y4_l2_10>;
+};
+
+&CPU11 {
+	i-cache-size = <65536>;
+	i-cache-line-size = <64>;
+	i-cache-sets = <256>;
+	d-cache-size = <65536>;
+	d-cache-line-size = <64>;
+	d-cache-sets = <256>;
+	next-level-cache = <&y4_l2_11>;
+};
+
+/* CP6187 exposes only the eight A720 redistributors; the four A520
+ * windows from the common twelve-core DTSI are absent on this SKU.
+ */
+&gic {
+	#redistributor-regions = <8>;
+	reg = <0x0 0x0e010000 0x0 0x10000>,
+	      <0x0 0x0e090000 0x0 0x40000>,
+	      <0x0 0x0e0d0000 0x0 0x40000>,
+	      <0x0 0x0e110000 0x0 0x40000>,
+	      <0x0 0x0e150000 0x0 0x40000>,
+	      <0x0 0x0e190000 0x0 0x40000>,
+	      <0x0 0x0e1d0000 0x0 0x40000>,
+	      <0x0 0x0e210000 0x0 0x40000>,
+	      <0x0 0x0e250000 0x0 0x40000>;
+};
+
+/* The Mali CSF driver reads this at probe, before its first idle period. */
+&gpu {
+	power-policy = "always_on";
+};
+
+/* Keep the onboard video codec ready between decode/encode jobs. */
+&vpu {
+	myt,keep-runtime-active;
+};
+
+/* The on-SoC Zhouyi AIPU is fitted on both CP6187 products. */
+&aipu_res_0 {
+	status = "okay";
+};
+
+&npu {
+	status = "okay";
+};
+
+/* Neither baseboard uses CSI. The SoC's 400 MiB no-map pool is unused. */
+/delete-node/ &csi_dma_res_mem;
+
+/* Shared CP6187 NAS graphics/media CMA budget. */
+&linux_cma {
+	size = <0x0 0x20000000>;
+};

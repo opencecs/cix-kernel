@@ -1,0 +1,2066 @@
+/*
+ * Copyright 2024 Cix Technology Group Co., Ltd.
+ * Copyright (c) 2024, Radxa Computer (Shenzhen) Co., Ltd. All rights reserved.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
+/dts-v1/;
+
+#include "sky1.dtsi"
+#include "dt-bindings/usb/pd.h"
+#include <dt-bindings/input/linux-event-codes.h>
+
+/delete-node/ &reg_definition;
+
+/* ---- 6.6 moved these cache-exception monitors out of sky1.dtsi (Radxa board dtsi) ---- */
+/ {
+	dsu_cache_exception: dsu_cache_exception {
+		compatible = "cix,sky1_exception_dsu_cache";
+		interrupts = <GIC_SPI 0 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 1 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-names = "dsu_errirq", "dsu_faultirq";
+		status = "disabled";
+	};
+
+	cache_exception_core4: cache_exception_core4 {
+		compatible = "cix,sky1_exception_core_cache";
+		cpu = <&CPU4>;
+		interrupts = <GIC_SPI 15 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 27 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-names = "core_errirq", "core_faultirq";
+		interrupt-parent = <&gic>;
+		status = "disabled";
+	};
+
+	cache_exception_core5: cache_exception_core5 {
+		compatible = "cix,sky1_exception_core_cache";
+		cpu = <&CPU5>;
+		interrupts = <GIC_SPI 16 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 28 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-names = "core_errirq", "core_faultirq";
+		interrupt-parent = <&gic>;
+		status = "disabled";
+	};
+
+	cache_exception_core6: cache_exception_core6 {
+		compatible = "cix,sky1_exception_core_cache";
+		cpu = <&CPU6>;
+		interrupts = <GIC_SPI 17 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 29 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-names = "core_errirq", "core_faultirq";
+		interrupt-parent = <&gic>;
+		status = "disabled";
+	};
+
+	cache_exception_core7: cache_exception_core7 {
+		compatible = "cix,sky1_exception_core_cache";
+		cpu = <&CPU7>;
+		interrupts = <GIC_SPI 18 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 30 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-names = "core_errirq", "core_faultirq";
+		interrupt-parent = <&gic>;
+		status = "disabled";
+	};
+
+	cache_exception_core8: cache_exception_core8 {
+		compatible = "cix,sky1_exception_core_cache";
+		cpu = <&CPU8>;
+		interrupts = <GIC_SPI 19 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 31 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-names = "core_errirq", "core_faultirq";
+		interrupt-parent = <&gic>;
+		status = "disabled";
+	};
+
+	cache_exception_core9: cache_exception_core9 {
+		compatible = "cix,sky1_exception_core_cache";
+		cpu = <&CPU9>;
+		interrupts = <GIC_SPI 20 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 32 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-names = "core_errirq", "core_faultirq";
+		interrupt-parent = <&gic>;
+		status = "disabled";
+	};
+
+	cache_exception_core10: cache_exception_core10 {
+		compatible = "cix,sky1_exception_core_cache";
+		cpu = <&CPU10>;
+		interrupts = <GIC_SPI 21 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 33 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-names = "core_errirq", "core_faultirq";
+		interrupt-parent = <&gic>;
+		status = "disabled";
+	};
+
+	cache_exception_core11: cache_exception_core11 {
+		compatible = "cix,sky1_exception_core_cache";
+		cpu = <&CPU11>;
+		interrupts = <GIC_SPI 22 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 34 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-names = "core_errirq", "core_faultirq";
+		interrupt-parent = <&gic>;
+		status = "disabled";
+	};
+};
+
+/* ---- 6.6 moved the CPU thermal zones to board dtsi; keep 6.1 content for parity ---- */
+&thermal_zones {
+		thermal_zone_cpu: thermal-zone1 {
+			polling-delay-passive = <0>;
+			polling-delay = <0>;
+			thermal-sensors = <&scmi_sensor 10>;
+			sustainable-power = <5000>;
+			trips {
+				m0_trip0: trip-point-0 {
+					temperature = <60000>;
+					hysteresis = <1000>;
+					type = "passive";
+				};
+				m0_trip1: trip-point-1 {
+					temperature = <85000>;
+					hysteresis = <1000>;
+					type = "passive";
+				};
+				m0_trip2: trip-point-2 {
+					temperature = <98000>;
+					hysteresis = <1000>;
+					type = "critical";
+				};
+			};
+
+			cooling-maps {
+				map0 {
+					trip = <&m0_trip0>;
+					cooling-device = <&CPU4 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+				};
+				map1 {
+					trip = <&m0_trip1>;
+					cooling-device = <&CPU4 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+				};
+			};
+		};
+		/*thermal zone for CPU_M1*/
+		thermal_zone_cpu_m1: thermal-zone2 {
+			polling-delay-passive = <0>;
+			polling-delay = <0>;
+			thermal-sensors = <&scmi_sensor 8>;
+			sustainable-power = <4500>;
+
+			trips {
+				m1_trip0: trip-point-0 {
+					temperature = <60000>;
+					hysteresis = <1000>;
+					type = "passive";
+				};
+				m1_trip1: trip-point-1 {
+					temperature = <85000>;
+					hysteresis = <1000>;
+					type = "passive";
+				};
+				m1_trip2: trip-point-2 {
+					temperature = <98000>;
+					hysteresis = <1000>;
+					type = "critical";
+				};
+			};
+
+			cooling-maps {
+				map0 {
+					trip = <&m1_trip0>;
+					cooling-device = <&CPU6 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+				};
+				map1 {
+					trip = <&m1_trip1>;
+					cooling-device = <&CPU6 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+				};
+			};
+		};
+		/*thermal zone for CPU_B0*/
+		thermal_zone_cpu_b0: thermal-zone3 {
+			polling-delay-passive = <0>;
+			polling-delay = <0>;
+			thermal-sensors = <&scmi_sensor 11>;
+			sustainable-power = <5500>;
+
+			trips {
+				b0_trip0: trip-point-0 {
+					temperature = <60000>;
+					hysteresis = <1000>;
+					type = "passive";
+				};
+				b0_trip1: trip-point-1 {
+					temperature = <85000>;
+					hysteresis = <1000>;
+					type = "passive";
+				};
+				b0_trip2: trip-point-2 {
+					temperature = <98000>;
+					hysteresis = <1000>;
+					type = "critical";
+				};
+			};
+
+			cooling-maps {
+				map0 {
+					trip = <&b0_trip0>;
+					cooling-device = <&CPU8 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+				};
+				map1 {
+					trip = <&b0_trip1>;
+					cooling-device = <&CPU8 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+				};
+			};
+		};
+		/*thermal zone for CPU_B1*/
+		thermal_zone_cpu_b1: thermal-zone4 {
+			polling-delay-passive = <0>;
+			polling-delay = <0>;
+			thermal-sensors = <&scmi_sensor 9>;
+			sustainable-power = <6000>;
+
+			trips {
+				b1_trip0: trip-point-0 {
+					temperature = <60000>;
+					hysteresis = <1000>;
+					type = "passive";
+				};
+				b1_trip1: trip-point-1 {
+					temperature = <85000>;
+					hysteresis = <1000>;
+					type = "passive";
+				};
+				b1_trip2: trip-point-2 {
+					temperature = <98000>;
+					hysteresis = <1000>;
+					type = "critical";
+				};
+			};
+
+			cooling-maps {
+				map0 {
+					trip = <&b1_trip0>;
+					cooling-device = <&CPU10 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+				};
+				map1 {
+					trip = <&b1_trip1>;
+					cooling-device = <&CPU10 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+				};
+			};
+		};
+};
+
+/* 6.6 sky1.dtsi only defines pwm0/pwm1; FAN_OUT0 is FCH timer 3 at 0x04113000 */
+&{/soc@0} {
+	pwm3: pwm3@04113000 {
+		compatible = "cix,sky1-pwm";
+		reg = <0x0 0x04113000 0x0 0x1000>;
+		clocks = <&scmi_clk CLK_TREE_FCH_TIMER_APB>,
+					<&scmi_clk CLK_TREE_FCH_TIMER_FUN>;
+		clock-names = "fch_pwm_apb_clk", "fch_pwm_func_clk";
+		resets = <&src_fch SW_TIMER_RST_FUNC_N>;
+		reset-names = "func_reset";
+		#pwm-cells = <2>;
+		status = "disabled";
+	};
+	pwm5: pwm5@04115000 {
+		compatible = "cix,sky1-pwm";
+		reg = <0x0 0x04115000 0x0 0x1000>;
+		clocks = <&scmi_clk CLK_TREE_FCH_TIMER_APB>,
+					<&scmi_clk CLK_TREE_FCH_TIMER_FUN>;
+		clock-names = "fch_pwm_apb_clk", "fch_pwm_func_clk";
+		resets = <&src_fch SW_TIMER_RST_FUNC_N>;
+		reset-names = "func_reset";
+		#pwm-cells = <2>;
+		status = "disabled";
+	};
+};
+
+/ {
+	model = "MYT-AI-NAS-Y4";
+	compatible = "myt,y4", "cix,sky1-edgeServer";
+
+	chosen {
+		stdout-path = &uart2;
+	};
+
+	/* J5 pin 197: GPIO011 -> A_LED_RUN -> Q2 -> D23 (high active). */
+	leds {
+		compatible = "gpio-leds";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_y4_run_led>;
+
+		led-run {
+			label = "y4:green:run";
+			gpios = <&s5_gpio0 10 GPIO_ACTIVE_HIGH>;
+			linux,default-trigger = "heartbeat";
+			default-state = "off";
+		};
+	};
+	
+	vbus_typec_regulator_0: regulator-usb-c0 {
+        compatible = "regulator-fixed";
+        regulator-name = "vbus_typec0";
+        regulator-min-microvolt = <5000000>;
+        regulator-max-microvolt = <5000000>;
+        gpio = <&s5_gpio1 8 GPIO_ACTIVE_LOW>; 
+        enable-active-low;
+        pinctrl-names = "default";
+        pinctrl-0 = <&pinctrl_usb0_pwr>;
+    };
+    
+    	vbus_typec_regulator_1: regulator-usb-c1 {
+        status = "disabled"; /* Y4 has only J8/USBC0; no second Type-C circuit. */
+        compatible = "regulator-fixed";
+        regulator-name = "vbus_typec1";
+        regulator-min-microvolt = <5000000>;
+        regulator-max-microvolt = <5000000>;
+        gpio = <&s5_gpio1 2 GPIO_ACTIVE_LOW>; 
+        enable-active-low;
+        pinctrl-names = "default";
+        pinctrl-0 = <&pinctrl_usb1_pwr>;
+    };
+    
+    	vdd_pcie_x8: regulator-vdd-pcie0 {
+		compatible = "regulator-fixed";
+		regulator-name = "VDD_PCIE0";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		/* Y4: 原 gpio = <&fch_gpio1 1> 已去掉。那个行号 (= Linux 75) 其实是
+		 * I2S2_DATA_IN1/GPIO076 这个 pad, 也就是 MCU_BOOT, 不是 X8 供电脚 ——
+		 * 保留会把 MCU 的 BOOT0 一直拉高, MCU 每次上电都进 ROM bootloader,
+		 * 而且还会占住该 GPIO, 使 mcu_flash.sh 无法 export。
+		 * Y4 的 8024/X8 供电已改为板级常开 (见下面 vgfx_pwren 的说明),
+		 * 所以这里不再需要 gpio 控制。
+		 *
+		 * 注意编号: 若要恢复 GPIO 控制, X8 供电脚是 SoC GPIO075 = fch_gpio1 pad0
+		 * (IOMUX 0x41700ec), 对应 Linux 全局行号 **74**, 不是 75 —— DTS 里没有
+		 * gpio-ranges/gpio-line-names, 表格编号与 Linux 行号差 1。 */
+		regulator-always-on;
+	};
+
+	/* V11: CN pin 136 (GPIO073) drives the IX8024 core regulator EN. */
+	vgfx_pwren: regulator-vgfx-pwren {
+		compatible = "regulator-fixed";
+		regulator-name = "VGFX_PWREN";
+		regulator-min-microvolt = <900000>;
+		regulator-max-microvolt = <900000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_mcu_ctrl>, <&pinctrl_vgfx_pwren>;
+		gpio = <&fch_gpio0 30 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+		regulator-boot-on;
+		regulator-always-on;
+	};
+	
+	reg_audio_avdd: regulator-audio-avdd {
+    	compatible = "regulator-fixed";
+    	regulator-name = "audio_avdd";
+    	regulator-min-microvolt = <3300000>;
+    	regulator-max-microvolt = <3300000>;
+    	regulator-always-on; 
+	};
+    
+    sbu_switch_0: usb_c_switch_0 {
+    compatible = "bl,1530tqfn","gpio-sbu-mux"; 
+    pinctrl-names = "default";
+    pinctrl-0 = <&pinctrl_sbu_switch_0>;
+    select-gpios = <&fch_gpio0 29 GPIO_ACTIVE_HIGH>;
+    orientation-switch;
+
+		port {
+			dp_aux_data_0: endpoint {
+				remote-endpoint = <&typec_dp_aux_0>;
+			};
+		};
+	};
+
+    sbu_switch_1: usb_c_switch_1 {
+        status = "disabled"; /* Y4 has only J8/USBC0; no second Type-C circuit. */
+    compatible = "bl,1530tqfn","gpio-sbu-mux"; 
+    pinctrl-names = "default";
+    pinctrl-0 = <&pinctrl_sbu_switch_1>;
+    select-gpios = <&fch_gpio1 4 GPIO_ACTIVE_HIGH>; 
+    orientation-switch;
+
+		port {
+			dp_aux_data_1: endpoint {
+				remote-endpoint = <&typec_dp_aux_1>;
+			};
+		};
+	};
+
+	sound {
+            compatible = "cix,sky1-sound-card";
+            model = "cix,sky1";
+            status = "okay";
+            /* Y4: 原 pinctrl-0 = <&pinctrl_audio_hp_det>(GPIO063) 已移除 ——
+             * GPIO063 在 Y4 上是 MCU_RST, 该组已并入 pinctrl_mcu_ctrl。
+             * 若 Y4 仍有耳机检测脚, 需要按新原理图补一组 pinctrl。 */
+            /* Y4: 原 hpmicdet-gpios = <&fch_gpio0 20 GPIO_ACTIVE_LOW> 已去掉。
+             * fch_gpio0 的行 20 就是 HDA_SDIN1/GPIO063 这个 pad (IOMUX 0x41700bc),
+             * 在 Y4 上被复用成 MCU_RST, 不能同时当耳机检测输入 ——
+             * 保留会让 mcu-boot.sh / mcu_flash.sh 无法 export gpio62 (EBUSY)。
+             * 若 Y4 原理图上耳机检测挪到了别的脚, 按新原理图补 hpmicdet-gpios。 */
+            
+            audio-routing =
+			"Headphone", "LOUT1",
+			"Headphone", "ROUT1",
+			"Speaker", "LOUT2",
+			"Speaker", "ROUT2",
+			"Headphone", "Headphone Power",
+			"Headphone", "Headphone Power",
+			"Speaker", "Speaker Power",
+			"Speaker", "Speaker Power",
+			"LINPUT1", "Main Mic",
+			"LINPUT2", "Main Mic",
+			"RINPUT1", "Headset Mic",
+			"RINPUT2", "Headset Mic";
+
+            codec_es8388: codec_es8388 {
+            	status = "disabled";
+		format = "i2s";
+		mclk-fs = <256>;
+		jack-det,hp;
+                    cpu {
+                            sound-dai = <&i2s0>;
+                    };
+                    codec {
+                            sound-dai = <&es8388>;
+                    };
+            };
+            
+            dptx0_audio: dptx0_audio {
+			status = "okay";
+
+			format = "i2s";
+			bitclock-inversion;
+			jack-det,dpout;
+
+			cpu {
+				sound-dai = <&i2s5 0>;
+			};
+
+			codec {
+				sound-dai = <&dp0>;
+			};
+		};
+
+		dptx1_audio: dptx1_audio {
+			status = "disabled";
+
+			format = "i2s";
+			bitclock-inversion;
+			jack-det,dpout;
+
+			cpu {
+				sound-dai = <&i2s6 0>;
+			};
+
+			codec {
+				sound-dai = <&dp1>;
+			};
+		};
+
+		dptx2_audio: dptx2_audio {
+			status = "okay";
+
+			format = "i2s";
+			bitclock-inversion;
+			jack-det,dpout;
+
+			cpu {
+				sound-dai = <&i2s7 0>;
+			};
+
+			codec {
+				sound-dai = <&dp2>;
+			};
+		};
+    };
+
+	/* Virtual display head: keeps a compositor output alive with no
+	 * physical panel, for headless desktop and remote capture. */
+	virtual-encoder@0 {
+		compatible = "cix,virtual-display";
+		status = "okay";
+
+		port {
+			vt_enc0_in: endpoint {
+				remote-endpoint = <&dpu2_pipe1_out>;
+			};
+		};
+	};
+};
+
+&fch_gpio0 {
+	status = "okay";
+};
+
+&fch_gpio1 {
+	status = "okay";
+};
+
+&fch_gpio2 {
+	status = "okay";
+};
+
+&fch_gpio3 {
+	status = "okay";
+};
+
+&s5_gpio0 {
+	status = "okay";
+};
+
+&s5_gpio1 {
+	status = "okay";
+};
+
+&hwclock {
+	status = "okay";
+};
+
+&iomuxc_s5 {
+        status = "okay";
+
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_hog_s5>;
+	pinctrl_hog_s5: pinctrl_hog_s5 {
+		sky1,pins = <
+			CIX_PAD_GPIO040_FUNC_GPIO040  (PULL_UP|DS_LEVEL4) /* GPIO40 */
+		>;
+	};
+
+	/* I2C1 物理走线在 SFI_I2C1 pad(S5 域 0x78/0x7c)，不在 iomuxc I2C1 pad。
+	 * 实测: 配 SFI pad 后 MCU(0x42) 立即应答; iomuxc 域配置无效(空脚) */
+	pinctrl_fch_i2c1_sfi: pinctrl_fch_i2c1_sfi {
+		sky1,pins = <
+			CIX_PAD_SFI_I2C1_SCL_FUNC_SFI_I2C1_SCL (PULL_UP|DS_LEVEL7)
+			CIX_PAD_SFI_I2C1_SDA_FUNC_SFI_I2C1_SDA (PULL_UP|DS_LEVEL7)
+		>;
+	};
+
+	/* SOC_I2C0 物理线走 SFI pad(核心板标注 I2C2/I3C0 复用脚), mux1=SF I3C0 控制器 */
+	pinctrl_sf_i3c0: pinctrl-sf-i3c0 {
+		sky1,pins = <
+			CIX_PAD_SFI_I2C0_SCL_FUNC_SFI_I3C0_SCL (PULL_UP|DS_LEVEL7)
+			CIX_PAD_SFI_I2C0_SDA_FUNC_SFI_I3C0_SDA (PULL_UP|DS_LEVEL7)
+		>;
+	};
+
+	pinctrl_y4_run_led: pinctrl-y4-run-led {
+		sky1,pins = <
+			CIX_PAD_GPIO011_FUNC_GPIO011 (PULL_DOWN|DS_LEVEL4)
+		>;
+	};
+
+	pinctrl_usb0: pinctrl_usb0_grp {
+		sky1,pins = <
+			CIX_PAD_GPIO013_FUNC_GPIO013  (PULL_UP|DS_LEVEL4)
+		>;
+	};
+	pinctrl_usb0_pwr: pinctrl_usb0_pwr {
+		sky1,pins = < 
+			CIX_PAD_GPIO023_FUNC_GPIO023 (PULL_UP|DS_LEVEL4)
+		>;
+	};
+	pinctrl_usb1: pinctrl_usb1_grp {
+		sky1,pins = < 
+			CIX_PAD_GPIO010_FUNC_GPIO010  (PULL_UP|DS_LEVEL4)
+		>;
+	};
+	pinctrl_usb1_pwr: pinctrl_usb1_pwr {
+		sky1,pins = <
+			CIX_PAD_GPIO023_FUNC_GPIO023 (PULL_UP|DS_LEVEL4)
+		>;
+	};
+	/* TCA9555@0x22 INT (INT_TCA955) -> GPIO019/SFI_GPIO4, 开漏低有效, 外部 10k 上拉 */
+	pinctrl_tca9555_int: pinctrl_tca9555_int {
+		sky1,pins = <
+			CIX_PAD_GPIO019_FUNC_GPIO019 (DS_LEVEL4)
+		>;
+	};
+        pinctrl_usb2: pinctrl_usb2_grp {
+		sky1,pins = <
+			CIX_PAD_SFI_GPIO0_FUNC_GPIO015 (PULL_DOWN |DS_LEVEL4)
+		>;
+	};
+	pinctrl_usb3: pinctrl_usb3_grp {
+		sky1,pins = <
+			CIX_PAD_SFI_GPIO0_FUNC_GPIO015 (PULL_UP |DS_LEVEL4)
+		>;
+	};
+        pinctrl_usb4: pinctrl_usb4_grp {
+		sky1,pins = <
+			CIX_PAD_GPIO022_FUNC_GPIO022 (PULL_DOWN |DS_LEVEL4)
+		>;
+	};
+	pinctrl_usb5: pinctrl_usb5_grp {
+		sky1,pins = <
+			CIX_PAD_GPIO022_FUNC_GPIO022 (PULL_UP |DS_LEVEL4)
+		>;
+	};
+	
+	/* Keep firmware CLKREQ mux: changing it breaks link training on Y4.
+	 * These groups configure only PERST and WAKE GPIOs (three cells each).
+	 */
+	pinctrl_pcie_x8_rc: pinctrl_pcie_x8_rc {
+		sky1,pins = <
+			CIX_PAD_GPIO004_FUNC_GPIO004 (DS_LEVEL4)
+			CIX_PAD_GPIO008_FUNC_GPIO008 (PULL_DOWN|DS_LEVEL4)
+		>;
+	};
+
+	pinctrl_pcie_x4_rc: pinctrl_pcie_x4_rc {
+		sky1,pins = <
+			CIX_PAD_GPIO003_FUNC_GPIO003 (PULL_DOWN|DS_LEVEL4)
+		>;
+	};
+	pinctrl_pcie_x2_rc: pinctrl_pcie_x2_rc {
+		sky1,pins = <
+			CIX_PAD_GPIO002_FUNC_GPIO002 (PULL_DOWN|DS_LEVEL4)
+			CIX_PAD_GPIO012_FUNC_GPIO012 (PULL_DOWN|DS_LEVEL4)
+		>;
+	};
+
+	pinctrl_pcie_x1_0_rc: pinctrl_pcie_x1_0_rc {/*x1_0 = 10G-2 (GPP_WLAN, PCIE3)*/
+		sky1,pins = <
+			CIX_PAD_GPIO005_FUNC_GPIO005 (PULL_DOWN|DS_LEVEL4)
+			CIX_PAD_GPIO009_FUNC_GPIO009 (PULL_DOWN|DS_LEVEL4)
+		>;
+	};
+
+	pinctrl_pcie_x1_1_rc: pinctrl_pcie_x1_1_rc {/*x1_1 = 2.5G (GPP_LOM, PCIE4)*/
+		sky1,pins = <
+			CIX_PAD_GPIO006_FUNC_GPIO006 (PULL_DOWN|DS_LEVEL4)
+			CIX_PAD_GPIO014_FUNC_GPIO014 (PULL_DOWN|DS_LEVEL4)
+		>;
+	};
+	
+	pinctrl0_husb311_int: pinctrl0-husb311-int {/* Type-C/PD IC interrupt pin */
+		sky1,pins = <
+			CIX_PAD_GPIO013_FUNC_GPIO013 (PULL_UP|DS_LEVEL4)
+		>;
+	};
+	
+	pinctrl1_husb311_int: pinctrl1-husb311-int {/* Type-C/PD IC interrupt pin */
+		sky1,pins = <
+			CIX_PAD_GPIO010_FUNC_GPIO010 (PULL_UP|DS_LEVEL4)
+		>;
+	};
+};
+
+&iomuxc {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_hog>;
+
+	pinctrl_hog: pinctrl_hog {
+		sky1,pins = <
+			CIX_PAD_GPIO144_FUNC_GPIO144 (PULL_DOWN|DS_LEVEL4) /* GPIO144 pdb0 */
+			CIX_PAD_GPIO145_FUNC_GPIO145 (PULL_DOWN|DS_LEVEL4) /* GPIO145 pdb1 */
+			CIX_PAD_GPIO146_FUNC_GPIO146 (PULL_DOWN|DS_LEVEL4) /* GPIO146 pdb2 */
+			CIX_PAD_GPIO147_FUNC_GPIO147 (PULL_DOWN|DS_LEVEL4) /* GPIO147 pdb3 */
+		>;
+	};
+
+
+	pinctrl_gmac0: pinctrl_gmac0 {
+		sky1,pins =
+		/* rfclk_25M */
+		<CIX_PAD_GPIO121_FUNC_GMAC0_REFCLK_25M (ST|DS_LEVEL12)>,
+		/* txc_trl */
+		<CIX_PAD_GPIO122_FUNC_GMAC0_TX_CTL (ST|DS_LEVEL12)>,
+		/* txd0 */
+		<CIX_PAD_GPIO123_FUNC_GMAC0_TXD0 (ST|DS_LEVEL12)>,
+		/* txd1 */
+		<CIX_PAD_GPIO124_FUNC_GMAC0_TXD1 (ST|DS_LEVEL12)>,
+		/* txd2 */
+		<CIX_PAD_GPIO125_FUNC_GMAC0_TXD2 (ST|DS_LEVEL12)>,
+		/* txd3 */
+		<CIX_PAD_GPIO126_FUNC_GMAC0_TXD3 (ST|DS_LEVEL12)>,
+		/* tx_clk */
+		<CIX_PAD_GPIO127_FUNC_GMAC0_TX_CLK (ST|DS_LEVEL4)>,
+		/* rx_ctl */
+		<CIX_PAD_GPIO128_FUNC_GMAC0_RX_CTL (ST|DS_LEVEL4)>,
+
+		/* rxd0 */
+		<CIX_PAD_GPIO129_FUNC_GMAC0_RXD0 (ST|DS_LEVEL4)>,
+		/* rxd1 */
+		<CIX_PAD_GPIO130_FUNC_GMAC0_RXD1 (ST|DS_LEVEL4)>,
+		/* rxd2 */
+		<CIX_PAD_GPIO131_FUNC_GMAC0_RXD2 (ST|DS_LEVEL4)>,
+		/* rxd3 */
+		<CIX_PAD_GPIO132_FUNC_GMAC0_RXD3 (ST|DS_LEVEL4)>,
+		/* rx_clk */
+		<CIX_PAD_GPIO133_FUNC_GMAC0_RX_CLK (ST|DS_LEVEL4)>,
+		/* mdc */
+		<CIX_PAD_GPIO134_FUNC_GMAC0_MDC (ST|DS_LEVEL12)>,
+		/* mdio */
+		<CIX_PAD_GPIO135_FUNC_GMAC0_MDIO (ST|DS_LEVEL12)>;
+	};
+
+	pinctrl_gmac1: pinctrl_gmac1 {
+		sky1,pins =
+		/* rfclk_25M */
+		<CIX_PAD_GPIO136_FUNC_GMAC1_REFCLK_25M (ST|DS_LEVEL12)>,
+		/* txc_trl */
+		<CIX_PAD_GPIO137_FUNC_GMAC1_TX_CTL (ST|DS_LEVEL12)>,
+		/* txd0 */
+		<CIX_PAD_GPIO138_FUNC_GMAC1_TXD0 (ST|DS_LEVEL12)>,
+		/* txd1 */
+		<CIX_PAD_GPIO139_FUNC_GMAC1_TXD1 (ST|DS_LEVEL12)>,
+		/* txd2 */
+		<CIX_PAD_GPIO140_FUNC_GMAC1_TXD2 (ST|DS_LEVEL12)>,
+		/* txd3 */
+		<CIX_PAD_GPIO141_FUNC_GMAC1_TXD3 (ST|DS_LEVEL12)>,
+		/* tx_clk */
+		<CIX_PAD_GPIO142_FUNC_GMAC1_TX_CLK (ST|DS_LEVEL12)>,
+		/* rx_ctl */
+		<CIX_PAD_GPIO143_FUNC_GMAC1_RX_CTL (ST|DS_LEVEL4)>,
+		/* rxd0 */
+		<CIX_PAD_GPIO144_FUNC_GMAC1_RXD0 (ST|DS_LEVEL4)>,
+		/* rxd1 */
+		<CIX_PAD_GPIO145_FUNC_GMAC1_RXD1 (ST|DS_LEVEL4)>,
+		/* rxd2 */
+		<CIX_PAD_GPIO146_FUNC_GMAC1_RXD2 (ST|DS_LEVEL4)>,
+		/* rxd3 */
+		<CIX_PAD_GPIO147_FUNC_GMAC1_RXD3 (ST|DS_LEVEL4)>,
+		/* rx_clk */
+		<CIX_PAD_GPIO148_FUNC_GMAC1_RX_CLK (ST|DS_LEVEL4)>,
+		/* mdc */
+		<CIX_PAD_GPIO149_FUNC_GMAC1_MDC (ST|DS_LEVEL12)>,
+		/* mdio */
+		<CIX_PAD_GPIO150_FUNC_GMAC1_MDIO (ST|DS_LEVEL12)>;
+	};
+
+	pinctrl_fch_i2c0: pinctrl_fch_i2c0 {
+		sky1,pins = <
+			CIX_PAD_I2C0_CLK_FUNC_I2C0_CLK (PULL_UP|DS_LEVEL7)
+			CIX_PAD_I2C0_SDA_FUNC_I2C0_SDA (PULL_UP|DS_LEVEL7)
+		>;
+	};
+
+	pinctrl_fch_i2c1: pinctrl_fch_i2c1 {
+		sky1,pins = <
+			CIX_PAD_I2C1_CLK_FUNC_I2C1_CLK (PULL_UP|DS_LEVEL7)
+			CIX_PAD_I2C1_SDA_FUNC_I2C1_SDA (PULL_UP|DS_LEVEL7)
+		>;
+	};
+
+	pinctrl_fch_i2c2: pinctrl_fch_i2c2 {
+		sky1,pins = <
+			CIX_PAD_I2C2_SCL_FUNC_I2C2_SCL (PULL_UP|ST|DS_LEVEL7)
+			CIX_PAD_I2C2_SDA_FUNC_I2C2_SDA (PULL_UP|ST|DS_LEVEL7)
+		>;
+	};
+
+	pinctrl_fch_i2c3: pinctrl_fch_i2c3 {
+		sky1,pins = <
+			CIX_PAD_I2C3_CLK_FUNC_I2C3_CLK (PULL_UP|ST|DS_LEVEL12)
+			CIX_PAD_I2C3_SDA_FUNC_I2C3_SDA (PULL_UP|ST|DS_LEVEL12)
+		>;
+	};
+
+	pinctrl_fch_i2c4: pinctrl_fch_i2c4 {
+		sky1,pins = <
+			CIX_PAD_I2C4_CLK_FUNC_I2C4_CLK (PULL_UP|DS_LEVEL7)
+			CIX_PAD_I2C4_SDA_FUNC_I2C4_SDA (PULL_UP|DS_LEVEL7)
+		>;
+	};
+	
+	pinctrl_fch_i2c5: pinctrl_fch_i2c5 {
+		sky1,pins = <
+			CIX_PAD_I2C5_SCL_FUNC_I2C5_SCL (PULL_UP|DS_LEVEL7)
+			CIX_PAD_I2C5_SDA_FUNC_I2C5_SDA (PULL_UP|DS_LEVEL7)
+		>;
+	};
+	
+	pinctrl_fch_i2c6: pinctrl_fch_i2c6 {
+		sky1,pins = <
+			CIX_PAD_I2C6_SCL_FUNC_I2C6_SCL (PULL_UP|DS_LEVEL7)
+			CIX_PAD_I2C6_SDA_FUNC_I2C6_SDA (PULL_UP|DS_LEVEL7)
+		>;
+	};
+	
+	pinctrl_fch_i2c7: pinctrl_fch_i2c7 {
+		sky1,pins = <
+			CIX_PAD_I2C7_SCL_FUNC_I2C7_SCL (PULL_UP|DS_LEVEL7)
+			CIX_PAD_I2C7_SDA_FUNC_I2C7_SDA (PULL_UP|DS_LEVEL7)
+		>;
+	};
+	
+	pinctrl_fch_uart0: pinctrl_fch_uart0 {
+		sky1,pins = <
+			CIX_PAD_UART0_TXD_FUNC_UART0_TXD (PULL_UP|ST|DS_LEVEL7)
+			CIX_PAD_UART0_RXD_FUNC_UART0_RXD (PULL_UP|ST|DS_LEVEL7)
+			CIX_PAD_UART0_CTS_FUNC_UART0_CTS (PULL_UP|ST|DS_LEVEL7)
+			CIX_PAD_UART0_RTS_FUNC_UART0_RTS (PULL_UP|ST|DS_LEVEL7)
+		>;
+	};
+
+	pinctrl_fch_uart1: pinctrl_fch_uart1 {
+                sky1,pins = <
+			CIX_PAD_UART1_TXD_FUNC_UART1_TXD (PULL_UP|ST|DS_LEVEL7)
+			CIX_PAD_UART1_RXD_FUNC_UART1_RXD (PULL_UP|ST|DS_LEVEL7)
+			CIX_PAD_UART1_CTS_FUNC_UART1_CTS (PULL_UP|ST|DS_LEVEL7)
+			CIX_PAD_UART1_RTS_FUNC_UART1_RTS (PULL_UP|ST|DS_LEVEL7)
+                >;
+        };
+        
+        pinctrl_fch_uart3: pinctrl_fch_uart3 {
+		sky1,pins = <
+			CIX_PAD_UART3_TXD_FUNC_UART3_TXD (PULL_UP|DS_LEVEL7)
+			CIX_PAD_UART3_RXD_FUNC_UART3_RXD (PULL_UP|DS_LEVEL7)
+		>;
+	};
+
+	pinctrl_fch_uart4: pinctrl_fch_uart4 {
+		sky1,pins = <
+			CIX_PAD_UART4_CSU_PM_TXD_FUNC_UART4_CSU_PM_TXD (PULL_UP|DS_LEVEL7)
+			CIX_PAD_UART4_CSU_PM_RXD_FUNC_UART4_CSU_PM_RXD (PULL_UP|DS_LEVEL7)
+		>;
+	};
+
+	pinctrl_fch_uart5: pinctrl_fch_uart5 {
+                sky1,pins = <
+			CIX_PAD_UART5_CSU_SE_TXD_FUNC_UART5_CSU_SE_TXD (PULL_UP|DS_LEVEL7)
+			CIX_PAD_UART5_CSU_SE_RXD_FUNC_UART5_CSU_SE_RXD (PULL_UP|DS_LEVEL7)
+                >;
+        };
+
+        pinctrl_fch_uart2: pinctrl_fch_uart2 {
+                sky1,pins = <
+			CIX_PAD_UART2_TXD_FUNC_UART2_TXD (PULL_UP|DS_LEVEL7)
+			CIX_PAD_UART2_RXD_FUNC_UART2_RXD (PULL_UP|DS_LEVEL7)
+                >;
+        };
+        
+        pinctrl_substrate_i2s0: pinctrl_substrate_i2s0 {
+		sky1,pins = <
+			/* I2S0_SCK */
+			CIX_PAD_HDA_BITCLK_FUNC_I2S0_SCK    	(PULL_DOWN|ST|DS_LEVEL12)
+			/* I2S0_DATA_IN */
+			CIX_PAD_HDA_RST_L_FUNC_I2S0_DATA_IN 	(PULL_DOWN|ST|DS_LEVEL12)
+			/* I2S0_MCLK */
+			CIX_PAD_HDA_SDIN0_FUNC_I2S0_MCLK    	(PULL_DOWN|ST|DS_LEVEL12)
+			/* I2S0_DATA_OUT */
+		
+			CIX_PAD_HDA_SDOUT0_FUNC_I2S0_DATA_OUT 	(PULL_UP|ST|DS_LEVEL12)
+			/* I2S0_WS */
+			CIX_PAD_HDA_SYNC_FUNC_I2S0_WS 	    	(PULL_UP|ST|DS_LEVEL12)
+		>;
+	};
+	
+	pinctrl_substrate_i2s4: pinctrl_substrate_i2s4 {
+		sky1,pins = <
+			//CIX_PAD_GPIO090_FUNC_I2S4_MCLK_LB      (ST|DS_LEVEL12) 	  /* i2s4_mclk_lb */
+			CIX_PAD_GPIO091_FUNC_I2S4_SCK_LB       (ST|DS_LEVEL12)    /* i2s4_sck_lb */
+			CIX_PAD_GPIO092_FUNC_I2S4_WS_LB        (ST|DS_LEVEL12)    /* i2s4_ws_lb */
+			CIX_PAD_GPIO093_FUNC_I2S4_DATA_IN_LB   (ST|DS_LEVEL12)    /* i2s4_data_in_lb */
+			CIX_PAD_GPIO094_FUNC_I2S4_DATA_OUT_LB  (ST|DS_LEVEL12) 	  /* i2s4_data_out_lb */
+		>;
+	};
+	
+	pinctrl_sbu_switch_0:pinctrl_sbu_switch_0{
+		sky1,pins = <
+			CIX_PAD_I2S2_RWS_FUNC_GPIO072 (PULL_DOWN|DS_LEVEL4)
+		>;
+	};
+	
+	pinctrl_sbu_switch_1:pinctrl_sbu_switch_1{
+		sky1,pins = <
+			CIX_PAD_I2S2_DATA_OUT2_FUNC_GPIO079 (PULL_DOWN|DS_LEVEL4)
+		>;
+	};
+	
+	pinctrl_fch_fan0: pinctrl_fch_fan0 {
+		sky1,pins = <
+			CIX_PAD_UART1_TXD_FUNC_FAN_OUT0 (PULL_UP|ST|DS_LEVEL7)
+		>;
+	};
+
+	/* FANTACH0_1V8 is UART1_RXD. Use GPIO100 on FCH GPIO1 line 25
+	 * to count tachometer falling edges.
+	 */
+	pinctrl_fan1_tach: pinctrl_fan1_tach {
+		sky1,pins = <
+			CIX_PAD_UART1_RXD_FUNC_GPIO100 (PULL_UP|ST|DS_LEVEL7)
+		>;
+	};
+
+	pinctrl_fch_fan2: pinctrl_fch_fan2 {
+		sky1,pins = <
+			CIX_PAD_UART0_CTS_FUNC_FAN_OUT2 (PULL_UP|ST|DS_LEVEL7)
+		>;
+	};
+
+	pinctrl_fan2_tach: pinctrl_fan2_tach {
+		sky1,pins = <
+			CIX_PAD_UART0_RTS_FUNC_GPIO098 (PULL_UP|ST|DS_LEVEL7)
+		>;
+	};
+
+	/* Y4: MCU 控制脚(SoC 直连)。MCU_RST=GPIO063(经 S8050 反相: 高=复位),
+	 * MCU_BOOT=GPIO076(经 MT9700: 高=BOOT0 有效)。原挂在 TCA9555(U58 IO10/IO11,
+	 * gpio2024/2025)上, Y4 去掉 TCA9555 后直连 SoC, 等飞线后由 mcu-boot.sh 驱动。
+	 * 注意: GPIO076 原先被 pinctrl_pcie_x8_pwr 占用(X8 供电, 实际供电脚是
+	 * fch_gpio1 1=GPIO075, 该组是历史误标), GPIO063 原先被 pinctrl_audio_hp_det
+	 * 占用, 两者已从原组移除。 */
+	pinctrl_mcu_ctrl: pinctrl_mcu_ctrl {
+		sky1,pins = <
+			CIX_PAD_HDA_SDIN1_FUNC_GPIO063 (PULL_DOWN|DS_LEVEL4)
+			CIX_PAD_I2S2_DATA_IN1_FUNC_GPIO076 (PULL_DOWN|DS_LEVEL4)
+		>;
+	};
+	
+	pinctrl_rtc_int:pinctrl_rtc_int{
+		sky1,pins = <
+			CIX_PAD_GPIO153_FUNC_GPIO153 (PULL_UP|DS_LEVEL4)
+		>;
+	};
+	
+	pinctrl_vgfx_pwren: pinctrl_vgfx_pwren{
+		sky1,pins = <
+			CIX_PAD_I2S2_TSCK_FUNC_GPIO073 (PULL_UP|DS_LEVEL4)
+		>;
+	};
+};
+
+&dp0 {
+	sound-name-prefix = "DP0";
+	status = "okay";
+	
+	phys = <&usbc0_dp_phy>;
+	cix,delay_after_hpd = <500>;
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		port@0 {
+			reg = <0>;
+			dp0_0_in: endpoint {
+				remote-endpoint = <&dpu0_pipe0_out>;
+			};
+		};
+		port@1 {
+			reg = <1>;
+			dp0_1_in: endpoint {
+				remote-endpoint = <&dpu0_pipe1_out>;
+			};
+		};
+	};
+};
+
+/* Y4 V11 routes DP0 to J8 and DP2 to CON1. DP1 has no connector. */
+&dp1 {
+	sound-name-prefix = "DP1";
+	status = "disabled";
+	cix,delay_after_hpd = <500>;
+	phys = <&usbc1_dp_phy>;
+
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		port@0 {
+			reg = <0>;
+			dp1_0_in: endpoint {
+				remote-endpoint = <&dpu1_pipe0_out>;
+			};
+		};
+		port@1 {
+			reg = <1>;
+			dp1_1_in: endpoint {
+				remote-endpoint = <&dpu1_pipe1_out>;
+			};
+		};
+	};
+};
+
+&dp2 {
+	sound-name-prefix = "DP2";
+	status = "okay";
+	
+	
+	/* DP2 uses its integrated eDP PHY at 0x1414c000, not a MIPI RX PHY. */
+	
+
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		port@0 {
+			reg = <0>;
+			dp2_0_in: endpoint {
+				remote-endpoint = <&dpu2_pipe0_out>;
+			};
+		};
+		/* eDP second pipe donated to the virtual display head:
+		 * the Y4 product has no embedded panel. */
+		port@1 {
+			reg = <1>;
+			status = "disabled";
+		};
+		port@2 {
+			reg = <2>;
+		};
+	};
+};
+
+&cix_dphy_2 {
+    status = "disabled"; /* No CSI receiver attached to the Y4 DisplayPort connector. */
+};
+
+&dpu0 {
+	status = "okay";
+
+	aclk_freq_fixed = <800000000>;
+	pipeline@0 {
+		lpu_raxi_aoutstdcapb = <32>;
+		lpu_raxi_boutstdcapb = <32>;
+		lpu_raxi_ben = <0>;
+		lpu_raxi_burstlen = <16>;
+		lpu_raxi_arqos = <15>;
+		lpu_raxi_ord = <0>;
+		lpu_waxi_outstdcapb = <16>;
+		lpu_waxi_burstlen = <16>;
+		lpu_waxi_awqos = <15>;
+		lpu_waxi_ord = <0>;
+		lpu_l0_arcache = <3>;
+		lpu_l1_arcache = <3>;
+		lpu_l2_arcache = <3>;
+		lpu_l3_arcache = <3>;
+		lpu_lw_arcache = <3>;
+		port {
+			dpu0_pipe0_out: endpoint {
+				remote-endpoint = <&dp0_0_in>;
+			};
+		};
+	};
+
+	pipeline@1 {
+		port {
+			dpu0_pipe1_out: endpoint {
+				remote-endpoint = <&dp0_1_in>;
+			};
+		};
+	};
+};
+
+&dpu1 {
+	status = "disabled";
+
+	aclk_freq_fixed = <800000000>;
+	pipeline@0 {
+		lpu_raxi_aoutstdcapb = <32>;
+		lpu_raxi_boutstdcapb = <32>;
+		lpu_raxi_ben = <0>;
+		lpu_raxi_burstlen = <16>;
+		lpu_raxi_arqos = <15>;
+		lpu_raxi_ord = <0>;
+		lpu_waxi_outstdcapb = <16>;
+		lpu_waxi_burstlen = <16>;
+		lpu_waxi_awqos = <15>;
+		lpu_waxi_ord = <0>;
+		lpu_l0_arcache = <3>;
+		lpu_l1_arcache = <3>;
+		lpu_l2_arcache = <3>;
+		lpu_l3_arcache = <3>;
+		lpu_lw_arcache = <3>;
+		port {
+			dpu1_pipe0_out: endpoint {
+				remote-endpoint = <&dp1_0_in>;
+			};
+		};
+	};
+
+	pipeline@1 {
+		port {
+			dpu1_pipe1_out: endpoint {
+				remote-endpoint = <&dp1_1_in>;
+			};
+		};
+	};
+};
+
+&dpu2 {
+	status = "okay";
+
+	aclk_freq_fixed = <800000000>;
+	pipeline@0 {
+		lpu_raxi_aoutstdcapb = <32>;
+		lpu_raxi_boutstdcapb = <32>;
+		lpu_raxi_ben = <0>;
+		lpu_raxi_burstlen = <16>;
+		lpu_raxi_arqos = <15>;
+		lpu_raxi_ord = <0>;
+		lpu_waxi_outstdcapb = <16>;
+		lpu_waxi_burstlen = <16>;
+		lpu_waxi_awqos = <15>;
+		lpu_waxi_ord = <0>;
+		lpu_l0_arcache = <3>;
+		lpu_l1_arcache = <3>;
+		lpu_l2_arcache = <3>;
+		lpu_l3_arcache = <3>;
+		lpu_lw_arcache = <3>;
+		port {
+			dpu2_pipe0_out: endpoint {
+				remote-endpoint = <&dp2_0_in>;
+			};
+		};
+	};
+
+	pipeline@1 {
+		port {
+			dpu2_pipe1_out: endpoint {
+				remote-endpoint = <&vt_enc0_in>;
+			};
+		};
+	};
+};
+
+
+&aeu0 {
+	status = "disabled";
+};
+
+&aeu1 {
+	status = "disabled";
+};
+
+&aeu2 {
+	status = "disabled";
+};
+
+&aeu3 {
+	status = "disabled";
+};
+
+&aeu4 {
+	status = "disabled";
+};
+
+&gmac_rcsu {
+	status = "disabled";
+};
+
+&usbc_phy0 {
+	orientation-switch;
+	svid = <0xff01>;
+	status = "okay";
+	default_conf = /bits/ 8 <0x03>;
+	mode-switch;
+	phy-status = "usb"; //add for gop,modified at startup
+	
+	port {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		usbdpphy0_lane_switch: endpoint@0 {
+			reg = <0>;
+			remote-endpoint = <&usbc0_phy_sw>;
+		};
+	};
+};
+
+&usb3_phy0 {
+	status = "okay";
+};
+
+&usbc0_dp_phy {
+	status = "okay";
+};
+
+&sf_i3c0 {
+	status = "disabled"; /* SAFE: sf时钟链未验证,勿使能 */
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_sf_i3c0>;
+};
+
+&sky1_usbss_0 {
+	sof_clk_freq = <8000000>;
+	lpm_clk_freq = <32000>;
+	pinctrl-names = "default";
+	status = "okay";
+};
+
+&usbss_0 {
+	status = "okay";
+	dr_mode = "otg"; /* J8: HUSB311 selects host/device from CC negotiation. */
+	usb-role-switch;
+	port {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		cdnsp_0_role_switch: endpoint@0 {
+			reg = <0>;
+			remote-endpoint = <&usbc0_role_sw>;
+		};
+	};
+};
+
+&usbc_phy1 {
+	status = "okay";
+	svid = <0xff01>;
+	default_conf = /bits/ 8 <0x03>;
+	phy-status = "usb"; //add for gop,modified at startup
+
+	/* No Type-C1 connector on Y4: do not wait for its disabled graph supplier. */
+
+};
+
+&usb3_phy1 {
+	status = "okay";
+};
+
+&usbc1_dp_phy {
+	status = "disabled";
+};
+
+&sky1_usbss_1 {
+	sof_clk_freq = <8000000>;
+	lpm_clk_freq = <32000>;
+	pinctrl-names = "default"; 
+	status = "disabled"; /* USBC1 is not routed to a Y4 USB connector. */
+};
+
+&usbss_1 {
+	status = "disabled"; /* USBC1 is not routed to a Y4 USB connector. */
+	dr_mode = "otg";
+	usb-role-switch;
+	
+	port {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		cdnsp_1_role_switch: endpoint@0 {
+			reg = <0>;
+			remote-endpoint = <&usbc1_role_sw>;
+		};
+	};
+};
+
+
+&usbc_phy2 {
+	status = "okay";
+	default_conf = /bits/ 8 <0x03>;
+	phy-status = "usb"; /* combo PHY 强制 USB 模式，否则 SS 链路不通(EVB 同款配置) */
+};
+
+&usbc2_dp_phy {
+	status = "okay";
+};
+
+&usb3_phy2 {
+	status = "okay";
+};
+
+&sky1_usbss_2 {
+	/* Y4 J13: Gen2 fails with Teclast 0dd8:1f40; retain verified 5Gbps compatibility. */
+	ssp-disable;
+	sof_clk_freq = <8000000>;
+	lpm_clk_freq = <32000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usb2>;
+	//pwren-gpios = <&s5_gpio1 0 GPIO_ACTIVE_LOW>; 
+	status = "okay";
+};
+
+&usbss_2 {
+	status = "okay";
+	dr_mode = "host";
+};
+
+&usbc_phy3 {
+	status = "okay";
+	default_conf = /bits/ 8 <0x03>;
+	phy-status = "usb"; /* combo PHY 强制 USB 模式，否则 SS 链路不通(EVB 同款配置) */
+};
+
+&usbc3_dp_phy {
+	status = "okay";
+};
+
+&usb3_phy3 {
+	status = "okay";
+};
+
+&sky1_usbss_3 {
+	/* Y4 J13: Gen2 fails with Teclast 0dd8:1f40; retain verified 5Gbps compatibility. */
+	ssp-disable;
+	sof_clk_freq = <8000000>;
+	lpm_clk_freq = <32000>;
+	pinctrl-names = "default";
+	//pinctrl-0 = <&pinctrl_usb2>;
+	status = "okay";
+};
+
+&usbss_3 {
+	status = "okay";
+	dr_mode = "host";
+};
+
+&usb3_phy4 {
+	status = "okay";
+};
+
+&usb3_phy4_0 {
+	status = "okay";
+};
+
+&sky1_usbss_4 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usb4>;
+	sof_clk_freq = <8000000>;
+	lpm_clk_freq = <32000>;
+	//pwren-gpios = <&s5_gpio1 7 GPIO_ACTIVE_LOW>; 
+	status = "okay";
+};
+
+&usbss_4 {
+	status = "okay";
+	dr_mode = "host";
+};
+
+&usb3_phy4_1 {
+	status = "okay";
+};
+
+&sky1_usbss_5 {
+	pinctrl-names = "default";
+	//pinctrl-0 = <&pinctrl_usb4>;
+	sof_clk_freq = <8000000>;
+	lpm_clk_freq = <32000>;
+	status = "okay";
+};
+
+&usbss_5 {
+	status = "okay";
+	dr_mode = "host";
+};
+
+/* usb6 (sky1_usbhs_0 / usb@9250000) — MCU GD32F407 刷机串口 */
+&sky1_usbhs_0 {
+	pinctrl-names = "default";
+	sof_clk_freq = <8000000>;
+	lpm_clk_freq = <32000>;
+	status = "okay";
+};
+
+&usbhs_0 {
+	status = "okay";
+	dr_mode = "host";
+};
+
+&sky1_usbhs_1 {
+	pinctrl-names = "default";
+	sof_clk_freq = <8000000>;
+	lpm_clk_freq = <32000>;
+	//pinctrl-0 = <&pinctrl_usb7>;
+	status = "okay";
+};
+
+&usbhs_1 {
+	status = "okay";
+	dr_mode = "host";
+};
+
+&sky1_usbhs_2 {
+	pinctrl-names = "default";
+	sof_clk_freq = <8000000>;
+	lpm_clk_freq = <32000>;
+	status = "okay";
+};
+
+&usbhs_2 {
+	status = "okay";
+	dr_mode = "host";
+};
+
+/* usb9 (sky1_usbhs_3 / usb@92e0000) — IX8024 调试串口 CH340 (U56) */
+&sky1_usbhs_3 {
+	pinctrl-names = "default";
+	sof_clk_freq = <8000000>;
+	lpm_clk_freq = <32000>;
+	status = "okay";
+};
+
+&usbhs_3 {
+	status = "okay";
+	dr_mode = "host";
+};
+
+&i2c0 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_fch_i2c0>;
+	
+	typec_controller_0: husb311@4e {
+		compatible = "hynetek,husb311"; 
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl0_husb311_int>;
+		reg = <0x4E>;              
+		interrupt-parent = <&s5_gpio0>; 
+		interrupts = <12 IRQ_TYPE_LEVEL_LOW>; 
+		vbus-supply = <&vbus_typec_regulator_0>;
+		
+		usb_con_0: connector {
+			compatible = "usb-c-connector";
+			label = "USB-C";
+			data-role = "dual";
+			power-role = "dual";
+			try-power-role = "sink";
+			op-sink-microwatt = <2500000>;
+			/* U68 MT9700: RSET=4.7k, nominal limit ~1.45A. */
+			/* Advertise only 5V/900mA; never request higher sink voltage. */
+			source-pdos = <PDO_FIXED(5000, 900, PDO_FIXED_USB_COMM)>;
+			/* Self-powered board: conservative 5V-only sink contract. */
+			sink-pdos = <PDO_FIXED(5000, 500, PDO_FIXED_USB_COMM)>;
+                	
+                	self-powered;
+			displayport = <&dp0>;
+			
+			altmodes {
+				#address-cells = <0x01>;
+				#size-cells = <0x00>;
+
+				altmode@0 {
+					reg = <0x00>;
+					svid = <0xff01>;
+					/* DP source, HBR3, receptacle; pin assignments C/D/E. */
+					vdo = <0x00001c46>;
+				};
+			};
+
+			ports {
+                		#address-cells = <1>;
+                		#size-cells = <0>;
+
+                		port@0 {
+                    			reg = <0>;
+                    			usbc0_phy_sw: endpoint {
+							remote-endpoint = <&usbdpphy0_lane_switch>;
+					};
+            			};
+            			port@1 {
+					reg = <1>;
+					typec_dp_aux_0: endpoint {
+						remote-endpoint = <&dp_aux_data_0>;
+					};
+				};
+			};
+			
+		};
+         
+         		ports {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				port@0 {
+					reg = <0>;
+					usbc0_role_sw: endpoint@0 {
+						remote-endpoint = <&cdnsp_0_role_switch>;
+					};
+				};
+			};
+        
+        };
+};
+
+&i2c1 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_fch_i2c1_sfi>;
+	clock-frequency = <100000>;
+	
+	typec_controller_1: husb311@4e {
+        status = "disabled"; /* Y4 has only J8/USBC0; no second Type-C circuit. */
+		compatible = "hynetek,husb311";
+		reg = <0x4E>;              
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl1_husb311_int>;
+		interrupt-parent = <&s5_gpio0>; 
+		interrupts = <9 IRQ_TYPE_LEVEL_LOW>; 
+		vbus-supply = <&vbus_typec_regulator_1>;
+		
+         	usb_con_1: connector {
+			compatible = "usb-c-connector";
+			label = "USB-C";
+			data-role = "dual";
+			power-role = "dual";
+			try-power-role = "sink";
+			op-sink-microwatt = <15000000>;
+			source-pdos = <PDO_FIXED(5000, 3000, PDO_FIXED_USB_COMM)>;
+			sink-pdos = <PDO_FIXED(5000, 3000, PDO_FIXED_USB_COMM)>;
+                		
+                	self-powered;
+			displayport = <&dp1>;
+			
+			altmodes {
+				#address-cells = <0x01>;
+				#size-cells = <0x00>;
+
+				altmode@0 {
+					reg = <0x00>;
+					svid = <0xff01>;
+					vdo = <0xffffffff>;
+				};
+			};
+                		
+			ports {
+                		#address-cells = <1>;
+                		#size-cells = <0>;
+
+                		port@0 {
+                    			reg = <0>;
+                    			usbc1_phy_sw: endpoint {
+							/* No second Type-C PHY endpoint on Y4. */
+					};
+            			};
+            			
+            			port@1 {
+					reg = <1>;
+					typec_dp_aux_1: endpoint {
+						remote-endpoint = <&dp_aux_data_1>;
+					};
+				};
+			};
+			
+		};
+         
+         		ports {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				port@0 {
+					reg = <0>;
+					usbc1_role_sw: endpoint@0 {
+						remote-endpoint = <&cdnsp_1_role_switch>;
+					};
+				};
+			};
+        
+        };
+};
+
+&i2c2 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_fch_i2c2>;
+	
+	es8388: es8388@11 {
+        compatible = "everest,es8388";
+        reg = <0x11>; 
+        #sound-dai-cells = <0>; 
+        clocks = <&scmi_clk CLK_TREE_AUDIO_CLK0>;        
+        clock-names = "mclk";            
+        AVDD-supply = <&reg_audio_avdd>; 
+        DVDD-supply = <&reg_audio_avdd>; 
+        PVDD-supply = <&reg_audio_avdd>; 
+        HPVDD-supply = <&reg_audio_avdd>;
+        status = "disabled"; 
+    };
+};
+
+&i2c2_slave {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_fch_i2c2>;
+	clock-frequency = <1000000>;
+	status = "disabled";
+};
+
+&i2c3 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_fch_i2c3>;
+};
+
+&i2c4 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_fch_i2c4>;
+	
+	hym8563: hym8563@51 {
+        compatible = "haoyu,hym8563";
+        reg = <0x51>;
+        #clock-cells = <0>;
+        clock-frequency = <32768>;
+        clock-output-names = "hym8563";
+        pinctrl-names = "default";
+        pinctrl-0 = <&pinctrl_rtc_int>;
+        interrupt-parent = <&fch_gpio3>;
+        interrupts = <14 IRQ_TYPE_LEVEL_LOW>;
+        wakeup-source;
+    };
+};
+
+&i2c5 {
+	status = "okay";
+	clock-frequency = <100000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_fch_i2c5>;
+};
+
+&i2c6 {
+	status = "okay";
+	clock-frequency = <100000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_fch_i2c6>;
+};
+
+&i2c7 {
+	status = "okay";
+	clock-frequency = <100000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_fch_i2c7>;
+};
+
+&uart0{
+        status = "disabled";
+        pinctrl-names = "default";
+        pinctrl-0 = <&pinctrl_fch_uart0>;
+        dmas = <&fch_dmac 0 2>, <&fch_dmac 1 3>;
+        dma-names = "tx","rx";
+};
+&uart1{
+        status = "disabled";
+        pinctrl-names = "default";
+        pinctrl-0 = <&pinctrl_fch_uart1>;
+        dmas = <&fch_dmac 2 4>, <&fch_dmac 3 5>;
+        dma-names = "tx","rx";
+};
+
+&uart2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_fch_uart2>;
+	clock-names = "uartclk", "apb_pclk";
+	status = "okay";
+};
+
+&uart3 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_fch_uart3>;
+	status = "disabled";
+};
+
+&uart4{
+        status = "disabled";
+        pinctrl-names = "default";
+        pinctrl-0 = <&pinctrl_fch_uart4>;
+        //clocks = <&scmi_clk CLK_TREE_S5_CSU_PM_800M>, <&scmi_clk CLK_TREE_S5_CSU_PM_800M>;
+	//clock-names = "uartclk", "apb_pclk";
+};
+
+&uart5{
+        status = "disabled";
+        pinctrl-names = "default";
+        pinctrl-0 = <&pinctrl_fch_uart5>;
+        //clocks = <&scmi_clk CLK_TREE_S5_CSU_SE_800M>, <&scmi_clk CLK_TREE_S5_CSU_SE_800M>;
+	//clock-names = "uartclk", "apb_pclk";
+};
+
+&hifi5 {
+	status = "okay";
+};
+
+&mbox_dsp2ap {
+	status = "okay";
+};
+
+&mbox_ap2dsp {
+	status = "okay";
+};
+
+&audss_cru {
+	status = "okay";
+};
+
+&audss_clk {
+	status = "okay";
+};
+
+&audss_rst {
+	status = "okay";
+};
+
+&audss_dmac {
+	memory-region = <&audio_alsa>;
+	status = "okay";
+};
+
+&i2s0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_substrate_i2s0>;
+	dmas = <&audss_dmac 0 0xff>, <&audss_dmac 1 0xff>;
+	dma-names = "tx", "rx";
+	status = "okay";
+};
+
+/*&i2s4 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_substrate_i2s4>;
+	dmas = <&audss_dmac 8 0xff>,<&audss_dmac 9 0xff>;
+	dma-names =  "tx","rx";
+	//cdns,pin-rx-mask = /bits/ 8 <0x0f>; 
+	//cdns,pin-tx-mask = /bits/ 8 <0x00>;
+	status = "okay";
+};*/
+
+&i2s5 {
+	/* i2s_mc5a for dp-out */
+	dmas = <&audss_dmac 10 0xff>;
+	dma-names = "tx";
+	cdns,pin-rx-mask = /bits/ 8 <0x00>;
+	cdns,pin-tx-mask = /bits/ 8 <0x0f>; /* 0x0f, pin0-pin3 works as transmitter */
+	status = "okay";
+};
+
+&i2s6 {
+	/* i2s_mc5b for dp-out */
+	dmas = <&audss_dmac 12 0xff>;
+	dma-names = "tx";
+	cdns,pin-rx-mask = /bits/ 8 <0x00>;
+	cdns,pin-tx-mask = /bits/ 8 <0x0f>; /* 0x0f, pin0-pin3 works as transmitter */
+	status = "okay";
+};
+
+&i2s7 {
+	/* i2s_mc5c for dp-out */
+	dmas = <&audss_dmac 14 0xff>;
+	dma-names = "tx";
+	cdns,pin-rx-mask = /bits/ 8 <0x00>;
+	cdns,pin-tx-mask = /bits/ 8 <0x0f>; /* 0x0f, pin0-pin3 works as transmitter */
+	status = "okay";
+};
+
+
+&its_pcie {
+	status = "okay";
+};
+
+&smmu_pciehub{
+	status = "disabled";
+};
+
+&smmu_mmhub{
+	status = "okay";
+};
+
+&pcie_x8_rc {
+	linux,pci-domain = <0>;
+	/* Fixed packet size for the complete IX8024 / M50 / Optane fabric. */
+	max-payload = <256>;
+	sky1,fixed-mps = <256>;
+	/* Late M50 enumeration needs three 1 MiB non-prefetchable BARs. */
+	myt,downstream-hotplug-mmio-min = <0x400000>;
+	plat-evk;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_pcie_x8_rc>;
+	reset-gpios = <&s5_gpio0 3 GPIO_ACTIVE_HIGH>;	/* GPIO004 = SLT_X8_RST_L, 低复位 */
+	wake-gpios = <&s5_gpio0 7 GPIO_ACTIVE_HIGH>;
+	vcc-pcie-supply = <&vdd_pcie_x8>;	/* P1 侧 PCIe 供电 */
+	wlan-en-supply = <&vgfx_pwren>;		/* IX8024 核心供电, probe 前自动拉高 */
+	max-link-speed = <4>;			/* Gen4 */
+	status = "okay";
+};
+
+&pcie_x4_rc {
+	linux,pci-domain = <2>;
+	plat-evk;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_pcie_x4_rc>;
+	reset-gpios = <&s5_gpio0 2 GPIO_ACTIVE_HIGH>;
+	status = "okay";
+};
+
+&pcie_x2_rc {
+	linux,pci-domain = <4>;
+	plat-evk;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_pcie_x2_rc>;
+	/* 10G-1 (B_WAN, RTL8127) → P1 PCIE2。
+	 * Y4 引脚: PERST=GPIO002, WAKE=GPIO012, CLKREQ=CLK_REQ2_L。 */
+	reset-gpios = <&s5_gpio0 1 GPIO_ACTIVE_HIGH>;	/* GPIO002 = B_WAN_RST_L */
+	wake-gpios = <&s5_gpio0 11 GPIO_ACTIVE_LOW>;	/* GPIO012 = B_WAN_PEWAKE_L */
+	max-link-speed = <4>;			/* Gen4, 10GbE 跑 x1 需 Gen4 */
+	status = "okay";
+};
+
+&pcie_x1_0_rc {
+	linux,pci-domain = <3>;
+	plat-evk;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_pcie_x1_0_rc>;
+	/* 10G-2 (GPP_WLAN, RTL8127) → P1 PCIE3 (SoC X1_0)。
+	 * 引脚: PERST=GPIO005, WAKE=GPIO009, CLKREQ=CLK_REQ3_L。 */
+	reset-gpios = <&s5_gpio0 4 GPIO_ACTIVE_HIGH>;	/* GPIO005 = M2_WLAN_RST_L */
+	wake-gpios = <&s5_gpio0 8 GPIO_ACTIVE_LOW>;	/* GPIO009 = WLAN_WAKE_L */
+	max-link-speed = <4>;			/* Gen4, 10GbE 跑 x1 需 Gen4 */
+	status = "okay";
+};
+
+&pcie_x1_1_rc {
+	linux,pci-domain = <1>;
+	plat-evk;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_pcie_x1_1_rc>;
+	/* 2.5G (GPP_LOM, RTL8125) → P1 PCIE4 (SoC X1_1)。
+	 * 引脚: PERST=GPIO006, WAKE=GPIO014, CLKREQ=CLK_REQ4_L。
+	 */
+	reset-gpios = <&s5_gpio0 5 GPIO_ACTIVE_HIGH>;	/* GPIO006 = A_LOM_RST_L */
+	wake-gpios = <&s5_gpio0 13 GPIO_ACTIVE_LOW>;	/* GPIO014 = A_LOM_PEWAKE_L */
+	max-link-speed = <4>;			/* Root port limit; the RTL8125 negotiates its own speed. */
+	status = "okay";
+};
+
+&pcie0_phy {
+	status = "okay";
+};
+
+&pcie_x8_phy {
+	status = "okay";
+};
+
+&pcie1_phy {
+	status = "okay";
+};
+
+&pcie_x4_phy {
+	status = "okay";
+};
+
+&pciex211_phy {
+	status = "okay";
+};
+
+&pcie_x2_phy {
+	status = "okay";
+};
+
+&pcie_x1_phy0 {
+	status = "okay";
+};
+
+&pcie_x1_phy1 {
+	status = "okay";
+};
+
+&mbox_ap2pm {
+    status = "okay";
+};
+
+&mbox_pm2ap {
+    status = "okay";
+};
+
+&mbox_se2ap {
+	status = "okay";
+};
+
+&mbox_ap2se {
+	status = "okay";
+};
+
+&sky1_crash {
+	status = "okay";
+};
+
+&ap2pm_scmi_mem {
+    status = "okay";
+};
+
+&pm2ap_scmi_mem {
+    status = "okay";
+};
+
+&ap_tfa_scmi_mem {
+    status = "okay";
+};
+
+&ap_to_pm_scmi {
+    status = "okay";
+};
+
+&ap_to_tfa_scmi {
+    status = "okay";
+};
+
+&scmi_dvfs {
+    status = "okay";
+};
+
+&vpu {
+	status = "okay";
+};
+
+&ramoops {
+	status = "okay";
+};
+
+&watchdog {
+        status = "okay";
+};
+
+&cix_dst {
+	status = "okay";
+};
+
+&exception_trace {
+	status = "okay";
+};
+
+&ap_adapter {
+	status = "okay";
+};
+
+&mntndump {
+	status = "okay";
+};
+
+&ddr_ctrl0 {
+	status = "okay";
+};
+
+&ddr_ctrl1 {
+	status = "okay";
+};
+
+&ddr_ctrl2 {
+	status = "okay";
+};
+
+&ddr_ctrl3 {
+	status = "okay";
+};
+
+&cix_pmu_ci700 {
+	status = "disabled";
+};
+
+&cix_pmu_ni700 {
+	status = "disabled";
+};
+
+&cix_bus_ci700 {
+	status = "disabled";
+};
+
+&cix_bus_ni700 {
+	status = "disabled";
+};
+
+&dsu_cache_exception {
+	status = "okay";
+};
+
+&cache_exception_core4 {
+	status = "okay";
+};
+
+&cache_exception_core5 {
+	status = "okay";
+};
+
+&cache_exception_core6 {
+	status = "okay";
+};
+
+&cache_exception_core7 {
+	status = "okay";
+};
+
+&cache_exception_core8 {
+	status = "okay";
+};
+
+&cache_exception_core9 {
+	status = "okay";
+};
+
+&cache_exception_core10 {
+	status = "okay";
+};
+
+&cache_exception_core11 {
+	status = "okay";
+};
+
+&cix_ipa {
+	status = "okay";
+};
+
+/* FU1 TMP75 is on PM_I2C3 (CSU PM domain), address 0x48.
+ * It is not connected to the FCH i2c3 pads. PM firmware/SCMI owns this path.
+ * See /Y4/repo/mcu/doc/THERMAL.md. */
+
+/*
+ * Y4 新板: 槽位热插拔由 IX8024 交换芯片自身处理(板级不再有 4 片 TCA9555),
+ * 故 TCA9555 扩展器节点与其用户(槽位按键 gpio_keys_slot / 槽位运行灯
+ * gpio_leds_slot)全部移除。
+ * 保留: GPIO019/SFI_GPIO4 的中断 pinctrl 组(pinctrl_tca9555_int) —— 该引脚
+ * 同时接到 MCU 的 PA0, 不能删。
+ */
+
+/* Physical FAN1 uses FANOUT0_1V8 and FANTACH0_1V8. The connector
+ * references on the schematic are transposed. UART1 and the GPT node
+ * covering Timer 3 are disabled on Y4.
+ */
+&pwm3 {
+	compatible = "myt,y4-fan1-pwm", "cix,sky1-pwm";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_fch_fan0>;
+	status = "okay";
+};
+
+&pwm5 {
+	compatible = "myt,y4-fan2-pwm", "cix,sky1-pwm";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_fch_fan2>;
+	status = "disabled";
+};
+
+/ {
+	cix_fan: pwm-fan {
+		compatible = "myt,y4-soc-fan1", "pwm-fan";
+		pwms = <&pwm3 0 40000>;	/* 25 kHz */
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_fan1_tach>;
+		tach-gpios = <&fch_gpio1 25 GPIO_ACTIVE_HIGH>;
+		myt,thermal-zones = <&thermal_zone_cpu &thermal_zone_cpu_m1
+				     &thermal_zone_cpu_b0 &thermal_zone_cpu_b1>;
+		status = "okay";
+	};
+
+	cix_fan2: pwm-fan-aux {
+		compatible = "myt,y4-soc-fan2", "pwm-fan";
+		pwms = <&pwm5 0 40000>;	/* 25 kHz */
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_fan2_tach>;
+		tach-gpios = <&fch_gpio1 23 GPIO_ACTIVE_HIGH>;
+		myt,thermal-zones = <&thermal_zone_cpu &thermal_zone_cpu_m1
+				     &thermal_zone_cpu_b0 &thermal_zone_cpu_b1>;
+		status = "disabled";
+	};
+};
+
+/* The 60 C maps only switched on the original power allocator. Temperature
+ * feedback starts CPU cooling at the original 85 C control trip instead.
+ * Keep the 98 C critical trips and the 85 C cooling maps unchanged.
+ */
+&thermal_zone_cpu { cooling-maps { /delete-node/ map0; }; };
+&thermal_zone_cpu_m1 { cooling-maps { /delete-node/ map0; }; };
+&thermal_zone_cpu_b0 { cooling-maps { /delete-node/ map0; }; };
+&thermal_zone_cpu_b1 { cooling-maps { /delete-node/ map0; }; };
+
+/* 0011: the SCP/SCMI firmware does not answer sensor reads for these zones;
+ * each poll holds the shared SCMI transport until timeout and stalls the
+ * console. Board temperature is collected from the IX8024 over I2C instead.
+ */
+&thermal_zones {
+	tz-vpu { polling-delay-passive = <0>; polling-delay = <0>; };
+	tz-gpu0 { polling-delay-passive = <0>; polling-delay = <0>; };
+	tz-gpu1 { polling-delay-passive = <0>; polling-delay = <0>; };
+	tz-brc { polling-delay-passive = <0>; polling-delay = <0>; };
+	tz-ddr0 { polling-delay-passive = <0>; polling-delay = <0>; };
+	tz-ddr1 { polling-delay-passive = <0>; polling-delay = <0>; };
+	tz-ci700 { polling-delay-passive = <0>; polling-delay = <0>; };
+	tz-npu { polling-delay-passive = <0>; polling-delay = <0>; };
+	tz-trc { polling-delay-passive = <0>; polling-delay = <0>; };
+	tz-gpu-avg { polling-delay-passive = <0>; polling-delay = <0>; };
+};
+
+#include "sky1-myt-cp6187.dtsi"

@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: GPL-2.0
+config MYT_RK182X
+	tristate "Rockchip RK182X PCIe endpoint driver"
+	depends on PCI && ARM64 && IOMMU_DMA
+	default m
+	help
+	  Build the Rockchip pcie-rkep host driver for external RK182X cards.
+	  The driver exposes a pcie-rkep device node for each bound PCI
+	  function. Endpoint userspace and firmware are supplied separately.

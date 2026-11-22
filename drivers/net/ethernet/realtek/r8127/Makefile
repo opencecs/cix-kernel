@@ -1,0 +1,51 @@
+# SPDX-License-Identifier: GPL-2.0-only
+# r8127 11.016.00 builtin Makefile for CIX P1
+
+CONFIG_SOC_LAN = y
+ENABLE_REALWOW_SUPPORT = n
+ENABLE_DASH_SUPPORT = y
+CONFIG_DOWN_SPEED_100 = n
+CONFIG_ASPM = y
+ENABLE_S5WOL = y
+ENABLE_S5_KEEP_CURR_MAC = n
+ENABLE_EEE = y
+ENABLE_S0_MAGIC_PACKET = n
+ENABLE_TX_NO_CLOSE = y
+ENABLE_MULTIPLE_TX_QUEUE = y
+ENABLE_PTP_SUPPORT = n
+ENABLE_RSS_SUPPORT = y
+ENABLE_LIB_SUPPORT = n
+ENABLE_USE_FIRMWARE_FILE = n
+DISABLE_WOL_SUPPORT = n
+DISABLE_MULTI_MSIX_VECTOR = n
+ENABLE_DOUBLE_VLAN = n
+ENABLE_PAGE_REUSE = n
+ENABLE_RX_PACKET_FRAGMENT = n
+ENABLE_GIGA_LITE = y
+
+obj-y += r8127.o
+r8127-objs := r8127_n.o rtl_eeprom.o rtltool.o r8127_fiber.o r8127_y4_led.o
+
+ifeq ($(ENABLE_DASH_SUPPORT), y)
+	r8127-objs += r8127_dash.o
+endif
+
+ifeq ($(ENABLE_MULTIPLE_TX_QUEUE), y)
+	ccflags-y += -DENABLE_MULTIPLE_TX_QUEUE
+endif
+
+ifeq ($(ENABLE_RSS_SUPPORT), y)
+	r8127-objs += r8127_rss.o
+	ccflags-y += -DENABLE_RSS_SUPPORT
+endif
+
+ccflags-y += -DCONFIG_R8127
+ccflags-y += -DCONFIG_R8127_NAPI
+ccflags-y += -DCONFIG_R8127_VLAN
+ccflags-y += -DCONFIG_SOC_LAN
+ccflags-y += -DCONFIG_ASPM
+ccflags-y += -DENABLE_S5WOL
+ccflags-y += -DENABLE_EEE
+ccflags-y += -DENABLE_TX_NO_CLOSE
+ccflags-y += -DENABLE_DASH_SUPPORT
+ccflags-y += -DENABLE_GIGA_LITE

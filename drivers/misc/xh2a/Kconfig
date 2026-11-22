@@ -1,0 +1,27 @@
+# SPDX-License-Identifier: GPL-2.0
+#
+# Houmo XH2A NPU driver configuration
+#
+
+config XH2A_DRV
+	tristate "Houmo XH2A NPU host driver"
+	depends on PCI
+	depends on ARM64
+	default y
+	help
+	  This driver provides support for the Houmo XH2A (LQ50) NPU
+	  compute card connected via PCIe. It includes PCIe communication,
+	  memory allocator, IPU, QSPI, I2C, and RPMsg Lite sub-modules.
+
+	  Choose Y to build the driver into the kernel, or M to build
+	  it as a loadable module (xh2a_drv.ko).
+
+	  If unsure, say Y.
+
+config XH2A_KEEP_AWAKE_BY_DEFAULT
+	bool "Keep detected XH2A devices active when idle"
+	depends on XH2A_DRV
+	help
+	  Keep each detected card ready for its next transfer. This trades idle
+	  power for lower first-transfer latency. The runtime_pm_enable module
+	  parameter can override the default. If unsure, say N.

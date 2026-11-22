@@ -1,0 +1,484 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright 2024 Cix Technology Group Co., Ltd.
+ */
+
+#include "sky1-csidma-common.dtsi"
+
+#define PLATFORM_ID  PLATFORM_A0_SOC
+
+&cix_dma_dev_0 {
+	sync = <0>;
+	channel_id = <0>;
+	dphy_mode = <0>;
+	cix,rcsu = <&cix_csi_rcsu_0>;
+	cix,hw = <&cix_bridge_0>;
+	status = "okay";
+	iommus = <&smmu_mmhub 0x21>;
+	port {
+		DEFINE_TWO_ENDPOINT(cix_dma_dev_0_in,mipi_csi2_virt00_out);
+	};
+};
+
+&cix_dma_dev_1 {
+	sync = <0>;
+	channel_id = <0>;
+	dphy_mode = <0>;
+	cix,rcsu = <&cix_csi_rcsu_0>;
+	cix,hw = <&cix_bridge_1>;
+	status = "okay";
+	memory-region = <&csi_dma_res_mem>;
+	port {
+		DEFINE_TWO_ENDPOINT(cix_dma_dev_1_in,mipi_csi2_virt01_out);
+	};
+};
+
+&cix_dma_dev_2 {
+	sync = <0>;
+	channel_id = <0>;
+	dphy_mode = <0>;
+	cix,rcsu = <&cix_csi_rcsu_1>;
+	cix,hw = <&cix_bridge_2>;
+	status = "okay";
+	iommus = <&smmu_mmhub 0x22>;
+	port {
+		DEFINE_TWO_ENDPOINT(cix_dma_dev_2_in,mipi_csi2_virt02_out);
+	};
+};
+
+&cix_dma_dev_3 {
+	sync = <0>;
+	channel_id = <2>;
+	dphy_mode = <0>;
+	cix,rcsu = <&cix_csi_rcsu_1>;
+	cix,hw = <&cix_bridge_3>;
+	status = "okay";
+	memory-region = <&csi_dma_res_mem>;
+	port {
+		DEFINE_TWO_ENDPOINT(cix_dma_dev_3_in,mipi_csi2_virt07_out);
+	};
+};
+
+&cix_csi_rcsu_0 {
+	platform-id = <PLATFORM_ID>;
+	status = "okay";
+};
+
+&cix_csi_rcsu_1 {
+	platform-id = <PLATFORM_ID>;
+	status = "okay";
+};
+
+&cix_bridge_0 {
+	status = "okay";
+};
+
+&cix_bridge_1 {
+	status = "okay";
+};
+
+&cix_bridge_2 {
+	status = "okay";
+};
+
+&cix_bridge_3 {
+	status = "okay";
+};
+
+&cix_mipi_csi_0 {
+	lanes = <4>;
+	status = "okay";
+};
+
+&cix_mipi_csi_2 {
+	lanes = <4>;
+	status = "okay";
+};
+
+&cix_mipi_virt_csi_00 {
+	cix,hw = <&cix_mipi_csi_0>;
+	status = "okay";
+	vc = <0>;
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		DEFINE_PORT_WITH_ENDPOINT(0,0,DEFINE_FOUR_ENDPOINT(mipi_csi2_virt00_in,1,1,dphy0_out));
+		DEFINE_PORT_WITH_ENDPOINT(1,1,DEFINE_FOUR_ENDPOINT(mipi_csi2_virt00_out,0,0,cix_dma_dev_0_in));
+	};
+};
+
+&cix_mipi_virt_csi_01 {
+	cix,hw = <&cix_mipi_csi_0>;
+	status = "okay";
+	vc = <1>;
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		DEFINE_PORT_WITH_ENDPOINT(0,0,DEFINE_FOUR_ENDPOINT(mipi_csi2_virt01_in,1,1,dphy1_out));
+		DEFINE_PORT_WITH_ENDPOINT(1,1,DEFINE_FOUR_ENDPOINT(mipi_csi2_virt01_out,0,0,cix_dma_dev_1_in));
+	};
+};
+
+&cix_mipi_virt_csi_02 {
+	cix,hw = <&cix_mipi_csi_0>;
+	status = "okay";
+	vc = <2>;
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		DEFINE_PORT_WITH_ENDPOINT(0,0,DEFINE_FOUR_ENDPOINT(mipi_csi2_virt02_in,1,1,dphy2_out));
+		DEFINE_PORT_WITH_ENDPOINT(1,1,DEFINE_FOUR_ENDPOINT(mipi_csi2_virt02_out,0,0,cix_dma_dev_2_in));
+	};
+};
+
+&cix_mipi_virt_csi_07 {
+	cix,hw = <&cix_mipi_csi_2>;
+	status = "okay";
+	vc = <0>;
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		DEFINE_PORT_WITH_ENDPOINT(0,0,DEFINE_FOUR_ENDPOINT(mipi_csi2_virt07_in,1,1,dphy7_out));
+		DEFINE_PORT_WITH_ENDPOINT(1,1,DEFINE_FOUR_ENDPOINT(mipi_csi2_virt07_out,0,0,cix_dma_dev_3_in));
+	};
+};
+
+&cix_dphy_hw_0 {
+	status = "okay";
+};
+
+&cix_dphy_hw_1 {
+	status = "okay";
+};
+
+&cix_dphy_0 {
+	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <0>;
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		DEFINE_PORT_WITH_ENDPOINT(0,0,DEFINE_FOUR_DPHY_IN_ENDPOINT(dphy0_in,1,1,imx490_5300_9295_a_out));
+		DEFINE_PORT_WITH_ENDPOINT(1,1,DEFINE_FOUR_ENDPOINT(dphy0_out,0,0,mipi_csi2_virt00_in));
+	};
+};
+
+&cix_dphy_1 {
+	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <0>;
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		DEFINE_PORT_WITH_ENDPOINT(0,0,DEFINE_FOUR_DPHY_IN_ENDPOINT(dphy1_in,1,1,imx490_5300_9295_b_out));
+		DEFINE_PORT_WITH_ENDPOINT(1,1,DEFINE_FOUR_ENDPOINT(dphy1_out,0,0,mipi_csi2_virt01_in));
+	};
+};
+
+&cix_dphy_2 {
+	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <0>;
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		DEFINE_PORT_WITH_ENDPOINT(0,0,DEFINE_FOUR_DPHY_IN_ENDPOINT(dphy2_in,1,1,imx490_5300_9295_c_out));
+		DEFINE_PORT_WITH_ENDPOINT(1,1,DEFINE_FOUR_ENDPOINT(dphy2_out,0,0,mipi_csi2_virt02_in));
+	};
+};
+
+&cix_dphy_7 {
+	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <0>;
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		DEFINE_PORT_WITH_ENDPOINT(0,0,DEFINE_FOUR_DPHY_IN_ENDPOINT(dphy7_in,1,1,imx490_5300_9295_d_out));
+		DEFINE_PORT_WITH_ENDPOINT(1,1,DEFINE_FOUR_ENDPOINT(dphy7_out,0,0,mipi_csi2_virt07_in));
+	};
+};
+
+&i2c0 {
+
+	z_dser_0: max96724@27 {
+		compatible = "cix,max96724";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <0x27>;
+		/*interrupt-parent = <&gpio0>;*/
+		/*interrupts = <RK_PB7 IRQ_TYPE_EDGE_RISING>;*/
+		/*pinctrl-names = "default","gpio";*/
+		/*pinctrl-0 = <&pinctrl_lt7911_hw>;*/
+		/*pinctrl-1 = <&pinctrl_lt7911_hw>;*/
+		/*pwdn-gpios = <&fch_gpio0 15 GPIO_ACTIVE_HIGH>;*/
+		/*power-gpios = <&fch_gpio1 16 GPIO_ACTIVE_HIGH>;*/
+		/*power1-gpios = <&fch_gpio1 18 GPIO_ACTIVE_HIGH>;*/
+		/*reset-gpios = <&fch_gpio1 12 GPIO_ACTIVE_HIGH>;*/
+		status = "okay";
+	};
+
+	z_imx490_5300_9295_a {
+		status = "okay";
+		def-addr = <0x6d>; /* actual i2c address of imx390 */
+		nvidia,gmsl-dser-device = <&z_dser_0>;
+		des-link = "A";
+		compatible = "cix,imx490_5300_9295";
+		reg = <0x10>; /* 9295 will translate to this i2c address */
+
+		physical_w = "15.0";
+		physical_h = "12.5";
+		sensor_model ="imx490";
+
+		/* enable CID_SENSOR_MODE_ID for sensor modes selection */
+		use_sensor_mode_id = "true";
+
+		mode0 {
+			mclk_khz = "24000";
+			num_lanes = "4";
+			tegra_sinterface = "serial_c";
+			vc_id = "0";
+			discontinuous_clk = "no";
+			dpcm_enable = "false";
+			cil_settletime = "0";
+			dynamic_pixel_bit_depth = "16";
+			csi_pixel_bit_depth = "16";
+			mode_type = "yuv";
+			pixel_phase = "uyvy";
+
+			active_w = "2880";
+			active_h = "1860";
+			readout_orientation = "0";
+			line_length = "4400";
+			inherent_gain = "1";
+			pix_clk_hz = "165000000";
+			serdes_pix_clk_hz = "800000000";
+
+			gain_factor = "10";
+			min_gain_val = "0"; /* dB */
+			max_gain_val = "420"; /* dB */
+			step_gain_val = "3"; /* 0.3 */
+			default_gain = "150";
+			min_hdr_ratio = "1";
+			max_hdr_ratio = "1";
+			framerate_factor = "1000000";
+			min_framerate = "30000000";
+			max_framerate = "30000000";
+			step_framerate = "1";
+			default_framerate = "30000000";
+			exposure_factor = "1000000";
+			min_exp_time = "59"; /*us, 2 lines*/
+			max_exp_time = "33333";
+			step_exp_time = "1";
+			default_exp_time = "33333";/* us */
+			embedded_metadata_height = "0";
+		};
+
+		gmsl-link {
+			num-ser-lanes = <4>;
+			streams = "yuv16";
+		};
+
+		port {
+			DEFINE_TWO_WITH_SENSOR_ENDPOINT(imx490_5300_9295_a_out,dphy0_in);
+		};
+	};
+
+	z_imx490_5300_9295_b {
+		status = "okay";
+		def-addr = <0x6d>; /* actual i2c address of imx390 */
+		nvidia,gmsl-dser-device = <&z_dser_0>;
+		des-link = "B";
+		compatible = "cix,imx490_5300_9295";
+		reg = <0x11>; /* 9295 will translate to this i2c address */
+
+		physical_w = "15.0";
+		physical_h = "12.5";
+		sensor_model ="imx490";
+
+		/* enable CID_SENSOR_MODE_ID for sensor modes selection */
+		use_sensor_mode_id = "true";
+
+		mode0 {
+			mclk_khz = "24000";
+			num_lanes = "4";
+			tegra_sinterface = "serial_c";
+			vc_id = "0";
+			discontinuous_clk = "no";
+			dpcm_enable = "false";
+			cil_settletime = "0";
+			dynamic_pixel_bit_depth = "16";
+			csi_pixel_bit_depth = "16";
+			mode_type = "yuv";
+			pixel_phase = "uyvy";
+
+			active_w = "2880";
+			active_h = "1860";
+			readout_orientation = "0";
+			line_length = "4400";
+			inherent_gain = "1";
+			pix_clk_hz = "165000000";
+			serdes_pix_clk_hz = "800000000";
+
+			gain_factor = "10";
+			min_gain_val = "0"; /* dB */
+			max_gain_val = "420"; /* dB */
+			step_gain_val = "3"; /* 0.3 */
+			default_gain = "150";
+			min_hdr_ratio = "1";
+			max_hdr_ratio = "1";
+			framerate_factor = "1000000";
+			min_framerate = "30000000";
+			max_framerate = "30000000";
+			step_framerate = "1";
+			default_framerate = "30000000";
+			exposure_factor = "1000000";
+			min_exp_time = "59"; /*us, 2 lines*/
+			max_exp_time = "33333";
+			step_exp_time = "1";
+			default_exp_time = "33333";/* us */
+			embedded_metadata_height = "0";
+		};
+
+		gmsl-link {
+			num-ser-lanes = <4>;
+			streams = "yuv16";
+		};
+
+		port {
+			DEFINE_TWO_WITH_SENSOR_ENDPOINT(imx490_5300_9295_b_out,dphy1_in);
+		};
+	};
+
+	z_imx490_5300_9295_c {
+		status = "okay";
+		def-addr = <0x6d>; /* actual i2c address of imx390 */
+		nvidia,gmsl-dser-device = <&z_dser_0>;
+		des-link = "C";
+		compatible = "cix,imx490_5300_9295";
+		reg = <0x12>; /* 9295 will translate to this i2c address */
+
+		physical_w = "15.0";
+		physical_h = "12.5";
+		sensor_model ="imx490";
+
+		/* enable CID_SENSOR_MODE_ID for sensor modes selection */
+		use_sensor_mode_id = "true";
+
+		mode0 {
+			mclk_khz = "24000";
+			num_lanes = "4";
+			tegra_sinterface = "serial_c";
+			vc_id = "0";
+			discontinuous_clk = "no";
+			dpcm_enable = "false";
+			cil_settletime = "0";
+			dynamic_pixel_bit_depth = "16";
+			csi_pixel_bit_depth = "16";
+			mode_type = "yuv";
+			pixel_phase = "uyvy";
+
+			active_w = "2880";
+			active_h = "1860";
+			readout_orientation = "0";
+			line_length = "4400";
+			inherent_gain = "1";
+			pix_clk_hz = "165000000";
+			serdes_pix_clk_hz = "800000000";
+
+			gain_factor = "10";
+			min_gain_val = "0"; /* dB */
+			max_gain_val = "420"; /* dB */
+			step_gain_val = "3"; /* 0.3 */
+			default_gain = "150";
+			min_hdr_ratio = "1";
+			max_hdr_ratio = "1";
+			framerate_factor = "1000000";
+			min_framerate = "30000000";
+			max_framerate = "30000000";
+			step_framerate = "1";
+			default_framerate = "30000000";
+			exposure_factor = "1000000";
+			min_exp_time = "59"; /*us, 2 lines*/
+			max_exp_time = "33333";
+			step_exp_time = "1";
+			default_exp_time = "33333";/* us */
+			embedded_metadata_height = "0";
+		};
+
+		gmsl-link {
+			num-ser-lanes = <4>;
+			streams = "yuv16";
+		};
+
+		port {
+			DEFINE_TWO_WITH_SENSOR_ENDPOINT(imx490_5300_9295_c_out,dphy2_in);
+		};
+	};
+
+	z_imx490_5300_9295_d {
+		status = "okay";
+		def-addr = <0x6d>; /* actual i2c address of imx390 */
+		nvidia,gmsl-dser-device = <&z_dser_0>;
+		des-link = "D";
+		compatible = "cix,imx490_5300_9295";
+		reg = <0x13>; /* 9295 will translate to this i2c address */
+
+		physical_w = "15.0";
+		physical_h = "12.5";
+		sensor_model ="imx490";
+
+		/* enable CID_SENSOR_MODE_ID for sensor modes selection */
+		use_sensor_mode_id = "true";
+
+		mode0 {
+			mclk_khz = "24000";
+			num_lanes = "4";
+			tegra_sinterface = "serial_c";
+			vc_id = "0";
+			discontinuous_clk = "no";
+			dpcm_enable = "false";
+			cil_settletime = "0";
+			dynamic_pixel_bit_depth = "16";
+			csi_pixel_bit_depth = "16";
+			mode_type = "yuv";
+			pixel_phase = "uyvy";
+
+			active_w = "2880";
+			active_h = "1860";
+			readout_orientation = "0";
+			line_length = "4400";
+			inherent_gain = "1";
+			pix_clk_hz = "165000000";
+			serdes_pix_clk_hz = "800000000";
+
+			gain_factor = "10";
+			min_gain_val = "0"; /* dB */
+			max_gain_val = "420"; /* dB */
+			step_gain_val = "3"; /* 0.3 */
+			default_gain = "150";
+			min_hdr_ratio = "1";
+			max_hdr_ratio = "1";
+			framerate_factor = "1000000";
+			min_framerate = "30000000";
+			max_framerate = "30000000";
+			step_framerate = "1";
+			default_framerate = "30000000";
+			exposure_factor = "1000000";
+			min_exp_time = "59"; /*us, 2 lines*/
+			max_exp_time = "33333";
+			step_exp_time = "1";
+			default_exp_time = "33333";/* us */
+			embedded_metadata_height = "0";
+		};
+
+		gmsl-link {
+			num-ser-lanes = <4>;
+			streams = "yuv16";
+		};
+
+		port {
+			DEFINE_TWO_WITH_SENSOR_ENDPOINT(imx490_5300_9295_d_out,dphy7_in);
+		};
+	};
+};

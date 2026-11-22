@@ -1,0 +1,11 @@
+# SPDX-License-Identifier: GPL-2.0-only
+config OPENCECS_LIFECYCLE_EMERGENCY
+ bool "OpenCecs PID1-only explicit emergency restart"
+ depends on ARM64 && ARCH_CIX && ARM_PSCI_FW
+ depends on PLAT_REBOOT_REASON && SKY1_REBOOT_REASON
+ default n
+ help
+   Built-in private emergency restart entry for OpenCecs PID1. Bypasses
+   blocking reboot notifiers, device shutdown and the global reboot mutex.
+   Only explicit acknowledged emergency operations are accepted. Ordinary
+   reboot(2) is unchanged. Hardware/firmware hard locks may still prevent reset.

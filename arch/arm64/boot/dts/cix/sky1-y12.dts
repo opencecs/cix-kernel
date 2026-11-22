@@ -1,0 +1,2247 @@
+/*
+ * Copyright 2024 Cix Technology Group Co., Ltd.
+ * Copyright (c) 2024, Radxa Computer (Shenzhen) Co., Ltd. All rights reserved.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
+/dts-v1/;
+
+#include "sky1.dtsi"
+#include "dt-bindings/usb/pd.h"
+#include <dt-bindings/input/linux-event-codes.h>
+#include <dt-bindings/gpio/gpio.h>
+
+/delete-node/ &reg_definition;
+
+/* ---- 6.6 moved these cache-exception monitors out of sky1.dtsi (Radxa board dtsi) ---- */
+/ {
+	dsu_cache_exception: dsu_cache_exception {
+		compatible = "cix,sky1_exception_dsu_cache";
+		interrupts = <GIC_SPI 0 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 1 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-names = "dsu_errirq", "dsu_faultirq";
+		status = "disabled";
+	};
+
+	cache_exception_core4: cache_exception_core4 {
+		compatible = "cix,sky1_exception_core_cache";
+		cpu = <&CPU4>;
+		interrupts = <GIC_SPI 15 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 27 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-names = "core_errirq", "core_faultirq";
+		interrupt-parent = <&gic>;
+		status = "disabled";
+	};
+
+	cache_exception_core5: cache_exception_core5 {
+		compatible = "cix,sky1_exception_core_cache";
+		cpu = <&CPU5>;
+		interrupts = <GIC_SPI 16 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 28 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-names = "core_errirq", "core_faultirq";
+		interrupt-parent = <&gic>;
+		status = "disabled";
+	};
+
+	cache_exception_core6: cache_exception_core6 {
+		compatible = "cix,sky1_exception_core_cache";
+		cpu = <&CPU6>;
+		interrupts = <GIC_SPI 17 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 29 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-names = "core_errirq", "core_faultirq";
+		interrupt-parent = <&gic>;
+		status = "disabled";
+	};
+
+	cache_exception_core7: cache_exception_core7 {
+		compatible = "cix,sky1_exception_core_cache";
+		cpu = <&CPU7>;
+		interrupts = <GIC_SPI 18 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 30 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-names = "core_errirq", "core_faultirq";
+		interrupt-parent = <&gic>;
+		status = "disabled";
+	};
+
+	cache_exception_core8: cache_exception_core8 {
+		compatible = "cix,sky1_exception_core_cache";
+		cpu = <&CPU8>;
+		interrupts = <GIC_SPI 19 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 31 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-names = "core_errirq", "core_faultirq";
+		interrupt-parent = <&gic>;
+		status = "disabled";
+	};
+
+	cache_exception_core9: cache_exception_core9 {
+		compatible = "cix,sky1_exception_core_cache";
+		cpu = <&CPU9>;
+		interrupts = <GIC_SPI 20 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 32 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-names = "core_errirq", "core_faultirq";
+		interrupt-parent = <&gic>;
+		status = "disabled";
+	};
+
+	cache_exception_core10: cache_exception_core10 {
+		compatible = "cix,sky1_exception_core_cache";
+		cpu = <&CPU10>;
+		interrupts = <GIC_SPI 21 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 33 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-names = "core_errirq", "core_faultirq";
+		interrupt-parent = <&gic>;
+		status = "disabled";
+	};
+
+	cache_exception_core11: cache_exception_core11 {
+		compatible = "cix,sky1_exception_core_cache";
+		cpu = <&CPU11>;
+		interrupts = <GIC_SPI 22 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 34 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-names = "core_errirq", "core_faultirq";
+		interrupt-parent = <&gic>;
+		status = "disabled";
+	};
+};
+
+/ {
+	model = "MYT-AI-NAS-Y12";
+	compatible = "myt,y12", "cix,sky1-edgeServer";
+
+	chosen {
+		stdout-path = &uart2;
+	};
+
+	vbus_typec_regulator_0: regulator-usb-c0 {
+        compatible = "regulator-fixed";
+        regulator-name = "vbus_typec0";
+        regulator-min-microvolt = <5000000>;
+        regulator-max-microvolt = <5000000>;
+        gpio = <&s5_gpio1 8 GPIO_ACTIVE_LOW>;
+        enable-active-low;
+        pinctrl-names = "default";
+        pinctrl-0 = <&pinctrl_usb0_pwr>;
+    };
+
+	vbus_typec_regulator_1: regulator-usb-c1 {
+	status = "disabled"; /* V11 only wires J8 to USBC0. */
+        compatible = "regulator-fixed";
+        regulator-name = "vbus_typec1";
+        regulator-min-microvolt = <5000000>;
+        regulator-max-microvolt = <5000000>;
+        gpio = <&s5_gpio1 2 GPIO_ACTIVE_LOW>;
+        enable-active-low;
+        pinctrl-names = "default";
+        pinctrl-0 = <&pinctrl_usb1_pwr>;
+    };
+
+	vdd_pcie_x8: regulator-vdd-pcie0 {
+		compatible = "regulator-fixed";
+		regulator-name = "VDD_PCIE0";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		/* GPIO076 is not wired to a rail enable on the Y12 V11. */
+		regulator-always-on;
+	};
+
+	/* IX8024 核心供电使能, TCA9555 0x21 IO_12 */
+	vgfx_pwren: regulator-vgfx-pwren {
+		compatible = "regulator-fixed";
+		regulator-name = "VGFX_PWREN";
+		regulator-min-microvolt = <900000>;
+		regulator-max-microvolt = <900000>;
+		/* U58 (0x21) line 10 / Linux GPIO2026: IX8024 core power enable. */
+		gpio = <&tca9555_1 10 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+	};
+
+	/* Y12 12 V rail enable: HDA_SDIN1/GPIO063 -> 12V_POWERON.
+	 * Must be on before the IX8024 x8 port is probed and must not depend
+	 * on the audio/DRM subsystem. */
+	vdd_12v_poweron: regulator-12v-poweron {
+		compatible = "regulator-fixed";
+		regulator-name = "12V_POWERON";
+		regulator-min-microvolt = <12000000>;
+		regulator-max-microvolt = <12000000>;
+		gpio = <&fch_gpio0 20 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+		regulator-always-on;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_12v_poweron>;
+	};
+
+	reg_audio_avdd: regulator-audio-avdd {
+	compatible = "regulator-fixed";
+	regulator-name = "audio_avdd";
+	regulator-min-microvolt = <3300000>;
+	regulator-max-microvolt = <3300000>;
+	regulator-always-on;
+	};
+
+    sbu_switch_0: usb_c_switch_0 {
+    compatible = "bl,1530tqfn","gpio-sbu-mux";
+    pinctrl-names = "default";
+    pinctrl-0 = <&pinctrl_sbu_switch_0>;
+    select-gpios = <&fch_gpio0 29 GPIO_ACTIVE_HIGH>;
+    orientation-switch;
+
+		port {
+			dp_aux_data_0: endpoint {
+				remote-endpoint = <&typec_dp_aux_0>;
+			};
+		};
+	};
+
+    sbu_switch_1: usb_c_switch_1 {
+	status = "disabled"; /* V11 only wires J8 to USBC0. */
+    compatible = "bl,1530tqfn","gpio-sbu-mux";
+    pinctrl-names = "default";
+    pinctrl-0 = <&pinctrl_sbu_switch_1>;
+    select-gpios = <&fch_gpio1 4 GPIO_ACTIVE_HIGH>;
+    orientation-switch;
+
+		port {
+			dp_aux_data_1: endpoint {
+				remote-endpoint = <&typec_dp_aux_1>;
+			};
+		};
+	};
+
+	sound {
+            compatible = "cix,sky1-sound-card";
+            model = "cix,sky1";
+            status = "okay";
+            /* GPIO063 is 12V_POWERON on this board, not a headphone
+             * detect; it is owned by the vdd_12v_poweron regulator. */
+
+            audio-routing =
+			"Headphone", "LOUT1",
+			"Headphone", "ROUT1",
+			"Speaker", "LOUT2",
+			"Speaker", "ROUT2",
+			"Headphone", "Headphone Power",
+			"Headphone", "Headphone Power",
+			"Speaker", "Speaker Power",
+			"Speaker", "Speaker Power",
+			"LINPUT1", "Main Mic",
+			"LINPUT2", "Main Mic",
+			"RINPUT1", "Headset Mic",
+			"RINPUT2", "Headset Mic";
+
+            codec_es8388: codec_es8388 {
+	status = "disabled";
+		format = "i2s";
+		mclk-fs = <256>;
+		jack-det,hp;
+                    cpu {
+                            sound-dai = <&i2s0>;
+                    };
+                    codec {
+                            sound-dai = <&es8388>;
+                    };
+            };
+
+            dptx0_audio: dptx0_audio {
+			status = "okay";
+
+			format = "i2s";
+			bitclock-inversion;
+			jack-det,dpout;
+
+			cpu {
+				sound-dai = <&i2s5 0>;
+			};
+
+			codec {
+				sound-dai = <&dp0>;
+			};
+		};
+
+		dptx1_audio: dptx1_audio {
+			status = "okay";
+
+			format = "i2s";
+			bitclock-inversion;
+			jack-det,dpout;
+
+			cpu {
+				sound-dai = <&i2s6 0>;
+			};
+
+			codec {
+				sound-dai = <&dp1>;
+			};
+		};
+
+		dptx2_audio: dptx2_audio {
+			status = "okay";
+
+			format = "i2s";
+			bitclock-inversion;
+			jack-det,dpout;
+
+			cpu {
+				sound-dai = <&i2s7 0>;
+			};
+
+			codec {
+				sound-dai = <&dp2>;
+			};
+		};
+    };
+
+	/* The Y12 product does not use the slot keys on U57. */
+	gpio_keys_slot: gpio-keys {
+		status = "disabled";
+		compatible = "gpio-keys";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		autorepeat;
+
+		key_slot1: key-slot1 {
+			label = "slot1-key";
+			linux,code = <KEY_F1>;
+			gpios = <&tca9555_2 0 GPIO_ACTIVE_LOW>;
+			debounce-interval = <50>;
+		};
+		key_slot2: key-slot2 {
+			label = "slot2-key";
+			linux,code = <KEY_F2>;
+			gpios = <&tca9555_2 1 GPIO_ACTIVE_LOW>;
+			debounce-interval = <50>;
+		};
+		key_slot3: key-slot3 {
+			label = "slot3-key";
+			linux,code = <KEY_F3>;
+			gpios = <&tca9555_2 2 GPIO_ACTIVE_LOW>;
+			debounce-interval = <50>;
+		};
+		key_slot4: key-slot4 {
+			label = "slot4-key";
+			linux,code = <KEY_F4>;
+			gpios = <&tca9555_2 3 GPIO_ACTIVE_LOW>;
+			debounce-interval = <50>;
+		};
+		key_slot5: key-slot5 {
+			label = "slot5-key";
+			linux,code = <KEY_F5>;
+			gpios = <&tca9555_2 4 GPIO_ACTIVE_LOW>;
+			debounce-interval = <50>;
+		};
+		key_slot6: key-slot6 {
+			label = "slot6-key";
+			linux,code = <KEY_F6>;
+			gpios = <&tca9555_2 5 GPIO_ACTIVE_LOW>;
+			debounce-interval = <50>;
+		};
+		key_slot7: key-slot7 {
+			label = "slot7-key";
+			linux,code = <KEY_F7>;
+			gpios = <&tca9555_2 6 GPIO_ACTIVE_LOW>;
+			debounce-interval = <50>;
+		};
+		key_slot8: key-slot8 {
+			label = "slot8-key";
+			linux,code = <KEY_F8>;
+			gpios = <&tca9555_2 7 GPIO_ACTIVE_LOW>;
+			debounce-interval = <50>;
+		};
+		key_slot9: key-slot9 {
+			label = "slot9-key";
+			linux,code = <KEY_F9>;
+			gpios = <&tca9555_2 8 GPIO_ACTIVE_LOW>;
+			debounce-interval = <50>;
+		};
+		key_slot10: key-slot10 {
+			label = "slot10-key";
+			linux,code = <KEY_F10>;
+			gpios = <&tca9555_2 9 GPIO_ACTIVE_LOW>;
+			debounce-interval = <50>;
+		};
+		key_slot11: key-slot11 {
+			label = "slot11-key";
+			linux,code = <KEY_F11>;
+			gpios = <&tca9555_2 10 GPIO_ACTIVE_LOW>;
+			debounce-interval = <50>;
+		};
+		key_slot12: key-slot12 {
+			label = "slot12-key";
+			linux,code = <KEY_F12>;
+			gpios = <&tca9555_2 11 GPIO_ACTIVE_LOW>;
+			debounce-interval = <50>;
+		};
+	};
+
+	/*
+	 * U69 GPIO lines follow the schematic SSD channel order. LED class
+	 * names follow the front-panel order, as does MCU telemetry.
+	 */
+	/* Virtual display head: keeps a compositor output alive with no
+	 * physical panel, for headless desktop and remote capture. */
+	virtual-encoder@0 {
+		compatible = "cix,virtual-display";
+		status = "okay";
+
+		port {
+			vt_enc0_in: endpoint {
+				remote-endpoint = <&dpu2_pipe1_out>;
+			};
+		};
+	};
+
+	gpio_leds_slot: gpio-leds {
+		compatible = "gpio-leds";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_y12_run_led>;
+
+		/* J5 GPIO011 -> A_LED_RUN -> Q2 -> chassis LED. */
+		led-run {
+			label = "y12:green:run";
+			gpios = <&s5_gpio0 10 GPIO_ACTIVE_HIGH>;
+			linux,default-trigger = "heartbeat";
+			default-state = "off";
+		};
+
+		led_slot1: led-slot1 {
+			label = "slot1:run";
+			gpios = <&tca9555_3 8 GPIO_ACTIVE_HIGH>;
+			default-state = "off";
+		};
+		led_slot2: led-slot2 {
+			label = "slot2:run";
+			gpios = <&tca9555_3 7 GPIO_ACTIVE_HIGH>;
+			default-state = "off";
+		};
+		led_slot3: led-slot3 {
+			label = "slot3:run";
+			gpios = <&tca9555_3 1 GPIO_ACTIVE_HIGH>;
+			default-state = "off";
+		};
+		led_slot4: led-slot4 {
+			label = "slot4:run";
+			gpios = <&tca9555_3 2 GPIO_ACTIVE_HIGH>;
+			default-state = "off";
+		};
+		led_slot5: led-slot5 {
+			label = "slot5:run";
+			gpios = <&tca9555_3 4 GPIO_ACTIVE_HIGH>;
+			default-state = "off";
+		};
+		led_slot6: led-slot6 {
+			label = "slot6:run";
+			gpios = <&tca9555_3 5 GPIO_ACTIVE_HIGH>;
+			default-state = "off";
+		};
+		led_slot7: led-slot7 {
+			label = "slot7:run";
+			gpios = <&tca9555_3 11 GPIO_ACTIVE_HIGH>;
+			default-state = "off";
+		};
+		led_slot8: led-slot8 {
+			label = "slot8:run";
+			gpios = <&tca9555_3 10 GPIO_ACTIVE_HIGH>;
+			default-state = "off";
+		};
+		led_slot9: led-slot9 {
+			label = "slot9:run";
+			gpios = <&tca9555_3 9 GPIO_ACTIVE_HIGH>;
+			default-state = "off";
+		};
+		led_slot10: led-slot10 {
+			label = "slot10:run";
+			gpios = <&tca9555_3 6 GPIO_ACTIVE_HIGH>;
+			default-state = "off";
+		};
+		led_slot11: led-slot11 {
+			label = "slot11:run";
+			gpios = <&tca9555_3 0 GPIO_ACTIVE_HIGH>;
+			default-state = "off";
+		};
+		led_slot12: led-slot12 {
+			label = "slot12:run";
+			gpios = <&tca9555_3 3 GPIO_ACTIVE_HIGH>;
+			default-state = "off";
+		};
+	};
+};
+
+/* FCH PWM controllers used by the two chassis fan groups. */
+&{/soc@0} {
+	pwm3: pwm3@04113000 {
+		compatible = "cix,sky1-pwm";
+		reg = <0x0 0x04113000 0x0 0x1000>;
+		clocks = <&scmi_clk CLK_TREE_FCH_TIMER_APB>,
+					<&scmi_clk CLK_TREE_FCH_TIMER_FUN>;
+		clock-names = "fch_pwm_apb_clk", "fch_pwm_func_clk";
+		resets = <&src_fch SW_TIMER_RST_FUNC_N>;
+		reset-names = "func_reset";
+		#pwm-cells = <2>;
+		status = "disabled";
+	};
+
+	pwm5: pwm5@04115000 {
+		compatible = "cix,sky1-pwm";
+		reg = <0x0 0x04115000 0x0 0x1000>;
+		clocks = <&scmi_clk CLK_TREE_FCH_TIMER_APB>,
+					<&scmi_clk CLK_TREE_FCH_TIMER_FUN>;
+		clock-names = "fch_pwm_apb_clk", "fch_pwm_func_clk";
+		resets = <&src_fch SW_TIMER_RST_FUNC_N>;
+		reset-names = "func_reset";
+		#pwm-cells = <2>;
+		status = "disabled";
+	};
+};
+
+&fch_gpio0 {
+	status = "okay";
+};
+
+&fch_gpio1 {
+	status = "okay";
+};
+
+&fch_gpio2 {
+	status = "okay";
+};
+
+&fch_gpio3 {
+	status = "okay";
+};
+
+&s5_gpio0 {
+	status = "okay";
+};
+
+&s5_gpio1 {
+	status = "okay";
+};
+
+&hwclock {
+	status = "okay";
+};
+
+&iomuxc_s5 {
+        status = "okay";
+
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_hog_s5>;
+
+	/* FAN5 tach, SoM pin 167. */
+	pinctrl_tach_fan5: pinctrl-tach-fan5 {
+		sky1,pins = <CIX_PAD_SPI1_MISO_FUNC_GPIO025 (PULL_UP|ST|DS_LEVEL7)>;
+	};
+
+	/* FAN6 tach, SoM pin 171. */
+	pinctrl_tach_fan6: pinctrl-tach-fan6 {
+		sky1,pins = <CIX_PAD_SPI1_CS0_FUNC_GPIO026 (PULL_UP|ST|DS_LEVEL7)>;
+	};
+
+	pinctrl_y12_run_led: pinctrl-y12-run-led {
+		sky1,pins = <
+			CIX_PAD_GPIO011_FUNC_GPIO011 (PULL_DOWN|DS_LEVEL4)
+		>;
+	};
+
+	pinctrl_hog_s5: pinctrl_hog_s5 {
+		sky1,pins = <
+			CIX_PAD_GPIO040_FUNC_GPIO040  (PULL_UP|DS_LEVEL4) /* GPIO40 */
+		>;
+	};
+
+	pinctrl_usb0: pinctrl_usb0_grp {
+		sky1,pins = <
+			CIX_PAD_GPIO013_FUNC_GPIO013  (PULL_UP|DS_LEVEL4)
+		>;
+	};
+	pinctrl_usb0_pwr: pinctrl_usb0_pwr {
+		sky1,pins = <
+			CIX_PAD_GPIO023_FUNC_GPIO023 (PULL_UP|DS_LEVEL4)
+		>;
+	};
+	pinctrl_usb1: pinctrl_usb1_grp {
+		sky1,pins = <
+			CIX_PAD_GPIO010_FUNC_GPIO010  (PULL_UP|DS_LEVEL4)
+		>;
+	};
+	pinctrl_usb1_pwr: pinctrl_usb1_pwr {
+		sky1,pins = <
+			CIX_PAD_GPIO023_FUNC_GPIO023 (PULL_UP|DS_LEVEL4)
+		>;
+	};
+	/* TCA9555@0x21(U58) INT -> GPIO018/SFI_GPIO3 = s5_gpio1 line3, 开漏低有效.
+	 * 原理图: INT 经 R983 0R + Q140 2SK3018 电平转换到 1.8V, SoC 侧已有 10K 上拉,
+	 * 这里只切 pad 功能, 不再开内部上拉. */
+	pinctrl_tca9555_21_int: pinctrl_tca9555_21_int {
+		sky1,pins = <
+			CIX_PAD_GPIO018_FUNC_GPIO018 (DS_LEVEL4)
+		>;
+	};
+	/* TCA9555@0x22(U57) INT -> GPIO019/SFI_GPIO4 = s5_gpio1 line4, 开漏低有效.
+	 * 原理图: INT 经 R847 0R + Q108 2SK3018 电平转换到 1.8V, SoC 侧已有 10K 上拉. */
+	pinctrl_tca9555_int: pinctrl_tca9555_int {
+		sky1,pins = <
+			CIX_PAD_GPIO019_FUNC_GPIO019 (DS_LEVEL4)
+		>;
+	};
+        pinctrl_usb2: pinctrl_usb2_grp {
+		sky1,pins = <
+			CIX_PAD_SFI_GPIO0_FUNC_GPIO015 (PULL_DOWN |DS_LEVEL4)
+		>;
+	};
+	pinctrl_usb3: pinctrl_usb3_grp {
+		sky1,pins = <
+			CIX_PAD_SFI_GPIO0_FUNC_GPIO015 (PULL_UP |DS_LEVEL4)
+		>;
+	};
+        pinctrl_usb4: pinctrl_usb4_grp {
+		sky1,pins = <
+			CIX_PAD_GPIO022_FUNC_GPIO022 (PULL_DOWN |DS_LEVEL4)
+		>;
+	};
+	pinctrl_usb5: pinctrl_usb5_grp {
+		sky1,pins = <
+			CIX_PAD_GPIO022_FUNC_GPIO022 (PULL_UP |DS_LEVEL4)
+		>;
+	};
+
+	pinctrl_pcie_x8_rc: pinctrl_pcie_x8_rc {
+		sky1,pins = <
+			CIX_PAD_GPIO004_FUNC_GPIO004 (DS_LEVEL4)
+			CIX_PAD_GPIO008_FUNC_GPIO008 (PULL_DOWN|DS_LEVEL4)
+		>;
+	};
+
+	pinctrl_pcie_x4_rc: pinctrl_pcie_x4_rc {
+		sky1,pins = <
+			CIX_PAD_GPIO003_FUNC_GPIO003 (PULL_DOWN|DS_LEVEL4)
+		>;
+	};
+	pinctrl_pcie_x2_rc: pinctrl_pcie_x2_rc {
+		sky1,pins = <
+			CIX_PAD_GPIO002_FUNC_GPIO002 (PULL_DOWN|DS_LEVEL4)
+			CIX_PAD_GPIO012_FUNC_GPIO012 (PULL_DOWN|DS_LEVEL4)
+		>;
+	};
+
+	pinctrl_pcie_x1_0_rc: pinctrl_pcie_x1_0_rc {/*x1_0 = 10G-2 (PCIE3)*/
+		sky1,pins = <
+			CIX_PAD_GPIO005_FUNC_GPIO005 (PULL_DOWN|DS_LEVEL4)
+			CIX_PAD_GPIO009_FUNC_GPIO009 (PULL_DOWN|DS_LEVEL4)
+		>;
+	};
+
+	pinctrl_pcie_x1_1_rc: pinctrl_pcie_x1_1_rc {/*x1_1 = 2.5G (PCIE4)*/
+		sky1,pins = <
+			CIX_PAD_GPIO006_FUNC_GPIO006 (PULL_DOWN|DS_LEVEL4)
+			CIX_PAD_GPIO014_FUNC_GPIO014 (PULL_DOWN|DS_LEVEL4)
+		>;
+	};
+
+	pinctrl0_husb311_int: pinctrl0-husb311-int {/* Type-C/PD IC interrupt pin */
+		sky1,pins = <
+			CIX_PAD_GPIO013_FUNC_GPIO013 (PULL_UP|DS_LEVEL4)
+		>;
+	};
+
+	pinctrl1_husb311_int: pinctrl1-husb311-int {/* Type-C/PD IC interrupt pin */
+		sky1,pins = <
+			CIX_PAD_GPIO010_FUNC_GPIO010 (PULL_UP|DS_LEVEL4)
+		>;
+	};
+};
+
+&iomuxc {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_hog>;
+
+	pinctrl_hog: pinctrl_hog {
+		sky1,pins = <
+			CIX_PAD_GPIO144_FUNC_GPIO144 (PULL_DOWN|DS_LEVEL4) /* GPIO144 pdb0 */
+			CIX_PAD_GPIO145_FUNC_GPIO145 (PULL_DOWN|DS_LEVEL4) /* GPIO145 pdb1 */
+			CIX_PAD_GPIO146_FUNC_GPIO146 (PULL_DOWN|DS_LEVEL4) /* GPIO146 pdb2 */
+			CIX_PAD_GPIO147_FUNC_GPIO147 (PULL_DOWN|DS_LEVEL4) /* GPIO147 pdb3 */
+		>;
+	};
+
+
+	pinctrl_gmac0: pinctrl_gmac0 {
+		sky1,pins =
+		/* rfclk_25M */
+		<CIX_PAD_GPIO121_FUNC_GMAC0_REFCLK_25M (ST|DS_LEVEL12)>,
+		/* txc_trl */
+		<CIX_PAD_GPIO122_FUNC_GMAC0_TX_CTL (ST|DS_LEVEL12)>,
+		/* txd0 */
+		<CIX_PAD_GPIO123_FUNC_GMAC0_TXD0 (ST|DS_LEVEL12)>,
+		/* txd1 */
+		<CIX_PAD_GPIO124_FUNC_GMAC0_TXD1 (ST|DS_LEVEL12)>,
+		/* txd2 */
+		<CIX_PAD_GPIO125_FUNC_GMAC0_TXD2 (ST|DS_LEVEL12)>,
+		/* txd3 */
+		<CIX_PAD_GPIO126_FUNC_GMAC0_TXD3 (ST|DS_LEVEL12)>,
+		/* tx_clk */
+		<CIX_PAD_GPIO127_FUNC_GMAC0_TX_CLK (ST|DS_LEVEL4)>,
+		/* rx_ctl */
+		<CIX_PAD_GPIO128_FUNC_GMAC0_RX_CTL (ST|DS_LEVEL4)>,
+
+		/* rxd0 */
+		<CIX_PAD_GPIO129_FUNC_GMAC0_RXD0 (ST|DS_LEVEL4)>,
+		/* rxd1 */
+		<CIX_PAD_GPIO130_FUNC_GMAC0_RXD1 (ST|DS_LEVEL4)>,
+		/* rxd2 */
+		<CIX_PAD_GPIO131_FUNC_GMAC0_RXD2 (ST|DS_LEVEL4)>,
+		/* rxd3 */
+		<CIX_PAD_GPIO132_FUNC_GMAC0_RXD3 (ST|DS_LEVEL4)>,
+		/* rx_clk */
+		<CIX_PAD_GPIO133_FUNC_GMAC0_RX_CLK (ST|DS_LEVEL4)>,
+		/* mdc */
+		<CIX_PAD_GPIO134_FUNC_GMAC0_MDC (ST|DS_LEVEL12)>,
+		/* mdio */
+		<CIX_PAD_GPIO135_FUNC_GMAC0_MDIO (ST|DS_LEVEL12)>;
+	};
+
+	pinctrl_gmac1: pinctrl_gmac1 {
+		sky1,pins =
+		/* rfclk_25M */
+		<CIX_PAD_GPIO136_FUNC_GMAC1_REFCLK_25M (ST|DS_LEVEL12)>,
+		/* txc_trl */
+		<CIX_PAD_GPIO137_FUNC_GMAC1_TX_CTL (ST|DS_LEVEL12)>,
+		/* txd0 */
+		<CIX_PAD_GPIO138_FUNC_GMAC1_TXD0 (ST|DS_LEVEL12)>,
+		/* txd1 */
+		<CIX_PAD_GPIO139_FUNC_GMAC1_TXD1 (ST|DS_LEVEL12)>,
+		/* txd2 */
+		<CIX_PAD_GPIO140_FUNC_GMAC1_TXD2 (ST|DS_LEVEL12)>,
+		/* txd3 */
+		<CIX_PAD_GPIO141_FUNC_GMAC1_TXD3 (ST|DS_LEVEL12)>,
+		/* tx_clk */
+		<CIX_PAD_GPIO142_FUNC_GMAC1_TX_CLK (ST|DS_LEVEL12)>,
+		/* rx_ctl */
+		<CIX_PAD_GPIO143_FUNC_GMAC1_RX_CTL (ST|DS_LEVEL4)>,
+		/* rxd0 */
+		<CIX_PAD_GPIO144_FUNC_GMAC1_RXD0 (ST|DS_LEVEL4)>,
+		/* rxd1 */
+		<CIX_PAD_GPIO145_FUNC_GMAC1_RXD1 (ST|DS_LEVEL4)>,
+		/* rxd2 */
+		<CIX_PAD_GPIO146_FUNC_GMAC1_RXD2 (ST|DS_LEVEL4)>,
+		/* rxd3 */
+		<CIX_PAD_GPIO147_FUNC_GMAC1_RXD3 (ST|DS_LEVEL4)>,
+		/* rx_clk */
+		<CIX_PAD_GPIO148_FUNC_GMAC1_RX_CLK (ST|DS_LEVEL4)>,
+		/* mdc */
+		<CIX_PAD_GPIO149_FUNC_GMAC1_MDC (ST|DS_LEVEL12)>,
+		/* mdio */
+		<CIX_PAD_GPIO150_FUNC_GMAC1_MDIO (ST|DS_LEVEL12)>;
+	};
+
+	pinctrl_fch_i2c0: pinctrl_fch_i2c0 {
+		sky1,pins = <
+			CIX_PAD_I2C0_CLK_FUNC_I2C0_CLK (PULL_UP|DS_LEVEL7)
+			CIX_PAD_I2C0_SDA_FUNC_I2C0_SDA (PULL_UP|DS_LEVEL7)
+		>;
+	};
+
+	pinctrl_fch_i2c1: pinctrl_fch_i2c1 {
+		sky1,pins = <
+			CIX_PAD_I2C1_CLK_FUNC_I2C1_CLK (PULL_UP|DS_LEVEL7)
+			CIX_PAD_I2C1_SDA_FUNC_I2C1_SDA (PULL_UP|DS_LEVEL7)
+		>;
+	};
+
+	pinctrl_fch_i2c2: pinctrl_fch_i2c2 {
+		sky1,pins = <
+			CIX_PAD_I2C2_SCL_FUNC_I2C2_SCL (PULL_UP|ST|DS_LEVEL7)
+			CIX_PAD_I2C2_SDA_FUNC_I2C2_SDA (PULL_UP|ST|DS_LEVEL7)
+		>;
+	};
+
+	pinctrl_fch_i2c3: pinctrl_fch_i2c3 {
+		sky1,pins = <
+			CIX_PAD_I2C3_CLK_FUNC_I2C3_CLK (PULL_UP|ST|DS_LEVEL12)
+			CIX_PAD_I2C3_SDA_FUNC_I2C3_SDA (PULL_UP|ST|DS_LEVEL12)
+		>;
+	};
+
+	pinctrl_fch_i2c4: pinctrl_fch_i2c4 {
+		sky1,pins = <
+			CIX_PAD_I2C4_CLK_FUNC_I2C4_CLK (PULL_UP|DS_LEVEL7)
+			CIX_PAD_I2C4_SDA_FUNC_I2C4_SDA (PULL_UP|DS_LEVEL7)
+		>;
+	};
+
+	pinctrl_fch_i2c5: pinctrl_fch_i2c5 {
+		sky1,pins = <
+			CIX_PAD_I2C5_SCL_FUNC_I2C5_SCL (PULL_UP|DS_LEVEL7)
+			CIX_PAD_I2C5_SDA_FUNC_I2C5_SDA (PULL_UP|DS_LEVEL7)
+		>;
+	};
+
+	pinctrl_fch_i2c6: pinctrl_fch_i2c6 {
+		sky1,pins = <
+			CIX_PAD_I2C6_SCL_FUNC_I2C6_SCL (PULL_UP|DS_LEVEL7)
+			CIX_PAD_I2C6_SDA_FUNC_I2C6_SDA (PULL_UP|DS_LEVEL7)
+		>;
+	};
+
+	pinctrl_fch_i2c7: pinctrl_fch_i2c7 {
+		sky1,pins = <
+			CIX_PAD_I2C7_SCL_FUNC_I2C7_SCL (PULL_UP|DS_LEVEL7)
+			CIX_PAD_I2C7_SDA_FUNC_I2C7_SDA (PULL_UP|DS_LEVEL7)
+		>;
+	};
+
+	pinctrl_fch_uart0: pinctrl_fch_uart0 {
+		sky1,pins = <
+			CIX_PAD_UART0_TXD_FUNC_UART0_TXD (PULL_UP|ST|DS_LEVEL7)
+			CIX_PAD_UART0_RXD_FUNC_UART0_RXD (PULL_UP|ST|DS_LEVEL7)
+			CIX_PAD_UART0_CTS_FUNC_UART0_CTS (PULL_UP|ST|DS_LEVEL7)
+			CIX_PAD_UART0_RTS_FUNC_UART0_RTS (PULL_UP|ST|DS_LEVEL7)
+		>;
+	};
+
+	pinctrl_fch_uart1: pinctrl_fch_uart1 {
+                sky1,pins = <
+			CIX_PAD_UART1_TXD_FUNC_UART1_TXD (PULL_UP|ST|DS_LEVEL7)
+			CIX_PAD_UART1_RXD_FUNC_UART1_RXD (PULL_UP|ST|DS_LEVEL7)
+			CIX_PAD_UART1_CTS_FUNC_UART1_CTS (PULL_UP|ST|DS_LEVEL7)
+			CIX_PAD_UART1_RTS_FUNC_UART1_RTS (PULL_UP|ST|DS_LEVEL7)
+                >;
+        };
+
+        pinctrl_fch_uart3: pinctrl_fch_uart3 {
+		sky1,pins = <
+			CIX_PAD_UART3_TXD_FUNC_UART3_TXD (PULL_UP|DS_LEVEL7)
+			CIX_PAD_UART3_RXD_FUNC_UART3_RXD (PULL_UP|DS_LEVEL7)
+		>;
+	};
+
+	pinctrl_fch_uart4: pinctrl_fch_uart4 {
+		sky1,pins = <
+			CIX_PAD_UART4_CSU_PM_TXD_FUNC_UART4_CSU_PM_TXD (PULL_UP|DS_LEVEL7)
+			CIX_PAD_UART4_CSU_PM_RXD_FUNC_UART4_CSU_PM_RXD (PULL_UP|DS_LEVEL7)
+		>;
+	};
+
+	pinctrl_fch_uart5: pinctrl_fch_uart5 {
+                sky1,pins = <
+			CIX_PAD_UART5_CSU_SE_TXD_FUNC_UART5_CSU_SE_TXD (PULL_UP|DS_LEVEL7)
+			CIX_PAD_UART5_CSU_SE_RXD_FUNC_UART5_CSU_SE_RXD (PULL_UP|DS_LEVEL7)
+                >;
+        };
+
+        pinctrl_fch_uart2: pinctrl_fch_uart2 {
+                sky1,pins = <
+			CIX_PAD_UART2_TXD_FUNC_UART2_TXD (PULL_UP|DS_LEVEL7)
+			CIX_PAD_UART2_RXD_FUNC_UART2_RXD (PULL_UP|DS_LEVEL7)
+                >;
+        };
+
+        pinctrl_substrate_i2s0: pinctrl_substrate_i2s0 {
+		sky1,pins = <
+			/* I2S0_SCK */
+			CIX_PAD_HDA_BITCLK_FUNC_I2S0_SCK    	(PULL_DOWN|ST|DS_LEVEL12)
+			/* I2S0_DATA_IN */
+			CIX_PAD_HDA_RST_L_FUNC_I2S0_DATA_IN 	(PULL_DOWN|ST|DS_LEVEL12)
+			/* I2S0_MCLK */
+			CIX_PAD_HDA_SDIN0_FUNC_I2S0_MCLK    	(PULL_DOWN|ST|DS_LEVEL12)
+			/* I2S0_DATA_OUT */
+
+			CIX_PAD_HDA_SDOUT0_FUNC_I2S0_DATA_OUT 	(PULL_UP|ST|DS_LEVEL12)
+			/* I2S0_WS */
+			CIX_PAD_HDA_SYNC_FUNC_I2S0_WS 	    	(PULL_UP|ST|DS_LEVEL12)
+		>;
+	};
+
+	pinctrl_substrate_i2s4: pinctrl_substrate_i2s4 {
+		sky1,pins = <
+			//CIX_PAD_GPIO090_FUNC_I2S4_MCLK_LB      (ST|DS_LEVEL12) 	  /* i2s4_mclk_lb */
+			CIX_PAD_GPIO091_FUNC_I2S4_SCK_LB       (ST|DS_LEVEL12)    /* i2s4_sck_lb */
+			CIX_PAD_GPIO092_FUNC_I2S4_WS_LB        (ST|DS_LEVEL12)    /* i2s4_ws_lb */
+			CIX_PAD_GPIO093_FUNC_I2S4_DATA_IN_LB   (ST|DS_LEVEL12)    /* i2s4_data_in_lb */
+			CIX_PAD_GPIO094_FUNC_I2S4_DATA_OUT_LB  (ST|DS_LEVEL12) 	  /* i2s4_data_out_lb */
+		>;
+	};
+
+	pinctrl_sbu_switch_0:pinctrl_sbu_switch_0{
+		sky1,pins = <
+			CIX_PAD_I2S2_RWS_FUNC_GPIO072 (PULL_DOWN|DS_LEVEL4)
+		>;
+	};
+
+	pinctrl_sbu_switch_1:pinctrl_sbu_switch_1{
+		sky1,pins = <
+			CIX_PAD_I2S2_DATA_OUT2_FUNC_GPIO079 (PULL_DOWN|DS_LEVEL4)
+		>;
+	};
+
+	/* FAN2 pin 3, SoM pin 135. */
+	pinctrl_tach0: pinctrl-tach0 {
+		sky1,pins = <CIX_PAD_UART1_RXD_FUNC_GPIO100 (PULL_UP|ST|DS_LEVEL7)
+			CIX_PAD_I2C2_SDA_FUNC_GPIO056 (PULL_UP|ST|DS_LEVEL7)
+		>;
+	};
+
+	pinctrl_fch_fan0: pinctrl_fch_fan0 {
+		sky1,pins = <
+			CIX_PAD_UART1_TXD_FUNC_FAN_OUT0  (PULL_DOWN|ST|DS_LEVEL7)
+		>;
+	};
+
+	/* FAN1 pin 3, SoM pin 137. */
+	pinctrl_tach2: pinctrl-tach2 {
+		sky1,pins = <CIX_PAD_UART0_RTS_FUNC_GPIO098 (PULL_UP|ST|DS_LEVEL7)
+			CIX_PAD_I2C2_SCL_FUNC_GPIO055 (PULL_UP|ST|DS_LEVEL7)
+		>;
+	};
+
+	pinctrl_fch_fan1: pinctrl_fch_fan1 {
+		sky1,pins = <
+			CIX_PAD_UART0_CTS_FUNC_FAN_OUT2	 (PULL_DOWN|ST|DS_LEVEL7)
+		>;
+	};
+
+	/* HDA_SDIN1/GPIO063 is wired to 12V_POWERON on Y12 (it is NOT an
+	 * audio headphone detect).  It is owned by the vdd_12v_poweron
+	 * regulator below so the 12 V rail does not depend on audio probing. */
+	pinctrl_12v_poweron: pinctrl_12v_poweron {
+		sky1,pins = <
+			CIX_PAD_HDA_SDIN1_FUNC_GPIO063 (PULL_UP|DS_LEVEL4)
+		>;
+	};
+
+	pinctrl_rtc_int:pinctrl_rtc_int{
+		sky1,pins = <
+			CIX_PAD_GPIO153_FUNC_GPIO153 (PULL_UP|DS_LEVEL4)
+		>;
+	};
+
+	pinctrl_4g_5g_disable:pinctrl_4g_5g_disable{
+		sky1,pins = <
+			CIX_PAD_I2S2_TSCK_FUNC_GPIO073 (PULL_DOWN|DS_LEVEL4)
+		>;
+	};
+};
+
+&dp0 {
+	status = "okay";
+
+	phys = <&usbc0_dp_phy>;
+	cix,delay_after_hpd = <500>;
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		port@0 {
+			reg = <0>;
+			dp0_0_in: endpoint {
+				remote-endpoint = <&dpu0_pipe0_out>;
+			};
+		};
+		port@1 {
+			reg = <1>;
+			dp0_1_in: endpoint {
+				remote-endpoint = <&dpu0_pipe1_out>;
+			};
+		};
+	};
+};
+
+&dp1 {
+	status = "okay";
+	cix,delay_after_hpd = <500>;
+	phys = <&usbc1_dp_phy>;
+
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		port@0 {
+			reg = <0>;
+			dp1_0_in: endpoint {
+				remote-endpoint = <&dpu1_pipe0_out>;
+			};
+		};
+		port@1 {
+			reg = <1>;
+			dp1_1_in: endpoint {
+				remote-endpoint = <&dpu1_pipe1_out>;
+			};
+		};
+	};
+};
+
+&dp2 {
+	sound-name-prefix = "DP2";
+	status = "okay";
+
+
+	/* DP2 uses its integrated eDP PHY at 0x1414c000, not a MIPI RX PHY. */
+
+
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		port@0 {
+			reg = <0>;
+			dp2_0_in: endpoint {
+				remote-endpoint = <&dpu2_pipe0_out>;
+			};
+		};
+		/* eDP second pipe donated to the virtual display head:
+		 * the Y4 product has no embedded panel. */
+		port@1 {
+			reg = <1>;
+			status = "disabled";
+		};
+		port@2 {
+			reg = <2>;
+		};
+	};
+};
+
+&cix_dphy_2 {
+    status = "disabled"; /* No CSI receiver attached to the Y4 DisplayPort connector. */
+};
+
+&dpu0 {
+	status = "okay";
+
+	aclk_freq_fixed = <800000000>;
+	pipeline@0 {
+		lpu_raxi_aoutstdcapb = <32>;
+		lpu_raxi_boutstdcapb = <32>;
+		lpu_raxi_ben = <0>;
+		lpu_raxi_burstlen = <16>;
+		lpu_raxi_arqos = <15>;
+		lpu_raxi_ord = <0>;
+		lpu_waxi_outstdcapb = <16>;
+		lpu_waxi_burstlen = <16>;
+		lpu_waxi_awqos = <15>;
+		lpu_waxi_ord = <0>;
+		lpu_l0_arcache = <3>;
+		lpu_l1_arcache = <3>;
+		lpu_l2_arcache = <3>;
+		lpu_l3_arcache = <3>;
+		lpu_lw_arcache = <3>;
+		port {
+			dpu0_pipe0_out: endpoint {
+				remote-endpoint = <&dp0_0_in>;
+			};
+		};
+	};
+
+	pipeline@1 {
+		port {
+			dpu0_pipe1_out: endpoint {
+				remote-endpoint = <&dp0_1_in>;
+			};
+		};
+	};
+};
+
+&dpu1 {
+	status = "okay";
+
+	aclk_freq_fixed = <800000000>;
+	pipeline@0 {
+		lpu_raxi_aoutstdcapb = <32>;
+		lpu_raxi_boutstdcapb = <32>;
+		lpu_raxi_ben = <0>;
+		lpu_raxi_burstlen = <16>;
+		lpu_raxi_arqos = <15>;
+		lpu_raxi_ord = <0>;
+		lpu_waxi_outstdcapb = <16>;
+		lpu_waxi_burstlen = <16>;
+		lpu_waxi_awqos = <15>;
+		lpu_waxi_ord = <0>;
+		lpu_l0_arcache = <3>;
+		lpu_l1_arcache = <3>;
+		lpu_l2_arcache = <3>;
+		lpu_l3_arcache = <3>;
+		lpu_lw_arcache = <3>;
+		port {
+			dpu1_pipe0_out: endpoint {
+				remote-endpoint = <&dp1_0_in>;
+			};
+		};
+	};
+
+	pipeline@1 {
+		port {
+			dpu1_pipe1_out: endpoint {
+				remote-endpoint = <&dp1_1_in>;
+			};
+		};
+	};
+};
+
+&dpu2 {
+	status = "okay";
+
+	aclk_freq_fixed = <800000000>;
+	pipeline@0 {
+		lpu_raxi_aoutstdcapb = <32>;
+		lpu_raxi_boutstdcapb = <32>;
+		lpu_raxi_ben = <0>;
+		lpu_raxi_burstlen = <16>;
+		lpu_raxi_arqos = <15>;
+		lpu_raxi_ord = <0>;
+		lpu_waxi_outstdcapb = <16>;
+		lpu_waxi_burstlen = <16>;
+		lpu_waxi_awqos = <15>;
+		lpu_waxi_ord = <0>;
+		lpu_l0_arcache = <3>;
+		lpu_l1_arcache = <3>;
+		lpu_l2_arcache = <3>;
+		lpu_l3_arcache = <3>;
+		lpu_lw_arcache = <3>;
+		port {
+			dpu2_pipe0_out: endpoint {
+				remote-endpoint = <&dp2_0_in>;
+			};
+		};
+	};
+
+	pipeline@1 {
+		port {
+			dpu2_pipe1_out: endpoint {
+				remote-endpoint = <&vt_enc0_in>;
+			};
+		};
+	};
+};
+
+
+&aeu0 {
+	status = "disabled";
+};
+
+&aeu1 {
+	status = "disabled";
+};
+
+&aeu2 {
+	status = "disabled";
+};
+
+&aeu3 {
+	status = "disabled";
+};
+
+&aeu4 {
+	status = "disabled";
+};
+
+&gmac_rcsu {
+	status = "disabled";
+};
+
+&usbc_phy0 {
+	orientation-switch;
+	svid = <0xff01>;
+	status = "okay";
+	default_conf = /bits/ 8 <0x03>;
+	mode-switch;
+	phy-status = "usb"; //add for gop,modified at startup
+
+	port {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		usbdpphy0_lane_switch: endpoint@0 {
+			reg = <0>;
+			remote-endpoint = <&usbc0_phy_sw>;
+		};
+	};
+};
+
+&usb3_phy0 {
+	status = "okay";
+};
+
+&usbc0_dp_phy {
+	status = "okay";
+};
+
+&sky1_usbss_0 {
+	sof_clk_freq = <8000000>;
+	lpm_clk_freq = <32000>;
+	pinctrl-names = "default";
+	status = "okay";
+};
+
+&usbss_0 {
+	status = "okay";
+	dr_mode = "otg";
+	usb-role-switch;
+	port {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		cdnsp_0_role_switch: endpoint@0 {
+			reg = <0>;
+			remote-endpoint = <&usbc0_role_sw>;
+		};
+	};
+};
+
+&usbc_phy1 {
+	status = "okay";
+	orientation-switch;
+	svid = <0xff01>;
+	default_conf = /bits/ 8 <0x03>;
+	mode-switch;
+	phy-status = "usb"; //add for gop,modified at startup
+
+	port {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		usbdpphy1_lane_switch: endpoint@0 {
+			reg = <0>;
+			remote-endpoint = <&usbc1_phy_sw>;
+		};
+	};
+
+};
+
+&usb3_phy1 {
+	status = "okay";
+};
+
+&usbc1_dp_phy {
+	status = "okay";
+};
+
+&sky1_usbss_1 {
+	sof_clk_freq = <8000000>;
+	lpm_clk_freq = <32000>;
+	pinctrl-names = "default";
+	status = "okay";
+};
+
+&usbss_1 {
+	status = "okay";
+	dr_mode = "otg";
+	usb-role-switch;
+
+	port {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		cdnsp_1_role_switch: endpoint@0 {
+			reg = <0>;
+			remote-endpoint = <&usbc1_role_sw>;
+		};
+	};
+};
+
+
+&usbc_phy2 {
+	status = "okay";
+	default_conf = /bits/ 8 <0x03>;
+	phy-status = "usb";
+};
+
+&usbc2_dp_phy {
+	status = "okay";
+};
+
+&usb3_phy2 {
+	status = "okay";
+};
+
+
+&sky1_usbss_2 {
+	ssp-disable;
+	sof_clk_freq = <8000000>;
+	lpm_clk_freq = <32000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usb2>;
+	//pwren-gpios = <&s5_gpio1 0 GPIO_ACTIVE_LOW>;
+	status = "okay";
+};
+
+&usbss_2 {
+	status = "okay";
+	dr_mode = "host";
+};
+
+&usbc_phy3 {
+	status = "okay";
+	default_conf = /bits/ 8 <0x03>;
+	phy-status = "usb";
+};
+
+&usbc3_dp_phy {
+	status = "okay";
+};
+
+&usb3_phy3 {
+	status = "okay";
+};
+
+&sky1_usbss_3 {
+	ssp-disable;
+	sof_clk_freq = <8000000>;
+	lpm_clk_freq = <32000>;
+	pinctrl-names = "default";
+	//pinctrl-0 = <&pinctrl_usb2>;
+	status = "okay";
+};
+
+&usbss_3 {
+	status = "okay";
+	dr_mode = "host";
+};
+
+&usb3_phy4 {
+	status = "okay";
+};
+
+&usb3_phy4_0 {
+	status = "okay";
+};
+
+&sky1_usbss_4 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usb4>;
+	sof_clk_freq = <8000000>;
+	lpm_clk_freq = <32000>;
+	//pwren-gpios = <&s5_gpio1 7 GPIO_ACTIVE_LOW>;
+	status = "okay";
+};
+
+&usbss_4 {
+	status = "okay";
+	dr_mode = "host";
+};
+
+&usb3_phy4_1 {
+	status = "okay";
+};
+
+&sky1_usbss_5 {
+	pinctrl-names = "default";
+	//pinctrl-0 = <&pinctrl_usb4>;
+	sof_clk_freq = <8000000>;
+	lpm_clk_freq = <32000>;
+	status = "okay";
+};
+
+&usbss_5 {
+	status = "okay";
+	dr_mode = "host";
+};
+
+/* usb6 (sky1_usbhs_0 / usb@9250000) — MCU GD32F407 刷机串口 */
+&sky1_usbhs_0 {
+	pinctrl-names = "default";
+	sof_clk_freq = <8000000>;
+	lpm_clk_freq = <32000>;
+	status = "okay";
+};
+
+&usbhs_0 {
+	status = "okay";
+	dr_mode = "host";
+};
+
+&sky1_usbhs_1 {
+	pinctrl-names = "default";
+	sof_clk_freq = <8000000>;
+	lpm_clk_freq = <32000>;
+	//pinctrl-0 = <&pinctrl_usb7>;
+	status = "okay";
+};
+
+&usbhs_1 {
+	status = "okay";
+	dr_mode = "host";
+};
+
+&sky1_usbhs_2 {
+	pinctrl-names = "default";
+	sof_clk_freq = <8000000>;
+	lpm_clk_freq = <32000>;
+	status = "okay";
+};
+
+&usbhs_2 {
+	status = "okay";
+	dr_mode = "host";
+};
+
+/* usb9 (sky1_usbhs_3 / usb@92e0000) — IX8024 调试串口 CH340 (U56) */
+&sky1_usbhs_3 {
+	pinctrl-names = "default";
+	sof_clk_freq = <8000000>;
+	lpm_clk_freq = <32000>;
+	status = "okay";
+};
+
+&usbhs_3 {
+	status = "okay";
+	dr_mode = "host";
+};
+
+&i2c0 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_fch_i2c0>;
+
+	typec_controller_0: husb311@4e {
+		compatible = "hynetek,husb311";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl0_husb311_int>;
+		reg = <0x4E>;
+		interrupt-parent = <&s5_gpio0>;
+		interrupts = <12 IRQ_TYPE_LEVEL_LOW>;
+		vbus-supply = <&vbus_typec_regulator_0>;
+
+		usb_con_0: connector {
+			compatible = "usb-c-connector";
+			label = "USB-C";
+			data-role = "dual";
+			power-role = "dual";
+			try-power-role = "sink";
+			op-sink-microwatt = <15000000>;
+			source-pdos = <PDO_FIXED(5000, 3000, PDO_FIXED_USB_COMM)>;
+			sink-pdos = <PDO_FIXED(5000, 3000, PDO_FIXED_USB_COMM)>;
+
+	self-powered;
+			displayport = <&dp0>;
+
+			altmodes {
+				#address-cells = <0x01>;
+				#size-cells = <0x00>;
+
+				altmode@0 {
+					reg = <0x00>;
+					svid = <0xff01>;
+					vdo = <0xffffffff>;
+				};
+			};
+
+			ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		port@0 {
+			reg = <0>;
+			usbc0_phy_sw: endpoint {
+							remote-endpoint = <&usbdpphy0_lane_switch>;
+					};
+			};
+			port@1 {
+					reg = <1>;
+					typec_dp_aux_0: endpoint {
+						remote-endpoint = <&dp_aux_data_0>;
+					};
+				};
+			};
+
+		};
+
+		ports {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				port@0 {
+					reg = <0>;
+					usbc0_role_sw: endpoint@0 {
+						remote-endpoint = <&cdnsp_0_role_switch>;
+					};
+				};
+			};
+
+        };
+};
+
+&i2c1 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_fch_i2c1>;
+	clock-frequency = <100000>;
+
+	typec_controller_1: husb311@4e {
+		status = "disabled"; /* V11 only wires J8 to USBC0. */
+		compatible = "hynetek,husb311";
+		reg = <0x4E>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl1_husb311_int>;
+		interrupt-parent = <&s5_gpio0>;
+		interrupts = <9 IRQ_TYPE_LEVEL_LOW>;
+		vbus-supply = <&vbus_typec_regulator_1>;
+
+	usb_con_1: connector {
+			compatible = "usb-c-connector";
+			label = "USB-C";
+			data-role = "dual";
+			power-role = "dual";
+			try-power-role = "sink";
+			op-sink-microwatt = <15000000>;
+			source-pdos = <PDO_FIXED(5000, 3000, PDO_FIXED_USB_COMM)>;
+			sink-pdos = <PDO_FIXED(5000, 3000, PDO_FIXED_USB_COMM)>;
+
+	self-powered;
+			displayport = <&dp1>;
+
+			altmodes {
+				#address-cells = <0x01>;
+				#size-cells = <0x00>;
+
+				altmode@0 {
+					reg = <0x00>;
+					svid = <0xff01>;
+					vdo = <0xffffffff>;
+				};
+			};
+
+			ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		port@0 {
+			reg = <0>;
+			usbc1_phy_sw: endpoint {
+							remote-endpoint = <&usbdpphy1_lane_switch>;
+					};
+			};
+
+			port@1 {
+					reg = <1>;
+					typec_dp_aux_1: endpoint {
+						remote-endpoint = <&dp_aux_data_1>;
+					};
+				};
+			};
+
+		};
+
+		ports {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				port@0 {
+					reg = <0>;
+					usbc1_role_sw: endpoint@0 {
+						remote-endpoint = <&cdnsp_1_role_switch>;
+					};
+				};
+			};
+
+        };
+};
+
+&i2c2 {
+	/* SoM pins 151 and 153 carry FAN3/FAN4 tach on Y12. */
+	status = "disabled";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_fch_i2c2>;
+
+	es8388: es8388@11 {
+        compatible = "everest,es8388";
+        reg = <0x11>;
+        #sound-dai-cells = <0>;
+        clocks = <&scmi_clk CLK_TREE_AUDIO_CLK0>;
+        clock-names = "mclk";
+        AVDD-supply = <&reg_audio_avdd>;
+        DVDD-supply = <&reg_audio_avdd>;
+        PVDD-supply = <&reg_audio_avdd>;
+        HPVDD-supply = <&reg_audio_avdd>;
+        status = "disabled";
+    };
+};
+
+&i2c2_slave {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_fch_i2c2>;
+	clock-frequency = <1000000>;
+	status = "disabled";
+};
+
+&i2c3 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_fch_i2c3>;
+};
+
+&i2c4 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_fch_i2c4>;
+
+	hym8563: hym8563@51 {
+        compatible = "haoyu,hym8563";
+        reg = <0x51>;
+        #clock-cells = <0>;
+        clock-frequency = <32768>;
+        clock-output-names = "hym8563";
+        pinctrl-names = "default";
+        pinctrl-0 = <&pinctrl_rtc_int>;
+        interrupt-parent = <&fch_gpio3>;
+        interrupts = <14 IRQ_TYPE_LEVEL_LOW>;
+        wakeup-source;
+    };
+};
+
+&i2c5 {
+	status = "okay";
+	clock-frequency = <100000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_fch_i2c5>;
+};
+
+&i2c6 {
+	status = "okay";
+	clock-frequency = <100000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_fch_i2c6>;
+};
+
+&i2c7 {
+	status = "okay";
+	clock-frequency = <100000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_fch_i2c7>;
+};
+
+&uart0{
+        status = "disabled";
+        pinctrl-names = "default";
+        pinctrl-0 = <&pinctrl_fch_uart0>;
+        dmas = <&fch_dmac 0 2>, <&fch_dmac 1 3>;
+        dma-names = "tx","rx";
+};
+&uart1{
+        status = "disabled";
+        pinctrl-names = "default";
+        pinctrl-0 = <&pinctrl_fch_uart1>;
+        dmas = <&fch_dmac 2 4>, <&fch_dmac 3 5>;
+        dma-names = "tx","rx";
+};
+
+&uart2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_fch_uart2>;
+	clock-names = "uartclk", "apb_pclk";
+	status = "okay";
+};
+
+&uart3 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_fch_uart3>;
+	status = "disabled";
+};
+
+&uart4{
+        status = "disabled";
+        pinctrl-names = "default";
+        pinctrl-0 = <&pinctrl_fch_uart4>;
+        //clocks = <&scmi_clk CLK_TREE_S5_CSU_PM_800M>, <&scmi_clk CLK_TREE_S5_CSU_PM_800M>;
+	//clock-names = "uartclk", "apb_pclk";
+};
+
+&uart5{
+        status = "disabled";
+        pinctrl-names = "default";
+        pinctrl-0 = <&pinctrl_fch_uart5>;
+        //clocks = <&scmi_clk CLK_TREE_S5_CSU_SE_800M>, <&scmi_clk CLK_TREE_S5_CSU_SE_800M>;
+	//clock-names = "uartclk", "apb_pclk";
+};
+
+&hifi5 {
+	status = "okay";
+};
+
+&mbox_dsp2ap {
+	status = "okay";
+};
+
+&mbox_ap2dsp {
+	status = "okay";
+};
+
+&audss_cru {
+	status = "okay";
+};
+
+&audss_clk {
+	status = "okay";
+};
+
+&audss_rst {
+	status = "okay";
+};
+
+&audss_dmac {
+	memory-region = <&audio_alsa>;
+	status = "okay";
+};
+
+&i2s0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_substrate_i2s0>;
+	dmas = <&audss_dmac 0 0xff>, <&audss_dmac 1 0xff>;
+	dma-names = "tx", "rx";
+	status = "okay";
+};
+
+/*&i2s4 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_substrate_i2s4>;
+	dmas = <&audss_dmac 8 0xff>,<&audss_dmac 9 0xff>;
+	dma-names =  "tx","rx";
+	//cdns,pin-rx-mask = /bits/ 8 <0x0f>;
+	//cdns,pin-tx-mask = /bits/ 8 <0x00>;
+	status = "okay";
+};*/
+
+&i2s5 {
+	/* i2s_mc5a for dp-out */
+	dmas = <&audss_dmac 10 0xff>;
+	dma-names = "tx";
+	cdns,pin-rx-mask = /bits/ 8 <0x00>;
+	cdns,pin-tx-mask = /bits/ 8 <0x0f>; /* 0x0f, pin0-pin3 works as transmitter */
+	status = "okay";
+};
+
+&i2s6 {
+	/* i2s_mc5b for dp-out */
+	dmas = <&audss_dmac 12 0xff>;
+	dma-names = "tx";
+	cdns,pin-rx-mask = /bits/ 8 <0x00>;
+	cdns,pin-tx-mask = /bits/ 8 <0x0f>; /* 0x0f, pin0-pin3 works as transmitter */
+	status = "okay";
+};
+
+&i2s7 {
+	/* i2s_mc5c for dp-out */
+	dmas = <&audss_dmac 14 0xff>;
+	dma-names = "tx";
+	cdns,pin-rx-mask = /bits/ 8 <0x00>;
+	cdns,pin-tx-mask = /bits/ 8 <0x0f>; /* 0x0f, pin0-pin3 works as transmitter */
+	status = "okay";
+};
+
+&its_pcie {
+	status = "okay";
+};
+
+&smmu_pciehub{
+	status = "disabled";
+};
+
+&smmu_mmhub{
+	status = "okay";
+};
+
+&pcie_x8_rc {
+	/*
+	 * Physical front slots 1..12: IX8024 downstream PCI device
+	 * numbers, relative to the switch secondary bus. The bus number
+	 * itself is allocated at enumeration and is not a slot identity.
+	 * Derived from the A..L port order in the Y12 reference design.
+	 */
+	myt,slot-downstream-ports = <8 7 1 2 4 5 11 10 9 6 0 3>;
+	/* x1 slots B/C/E/F/H/I/K/L, in physical order 3/4/5/6/2/1/8/7.
+	 * Turn these rails on before releasing the upstream PERST#.
+	 */
+	myt,slot-power-gpios = <&tca9555_0 3 GPIO_ACTIVE_HIGH>,
+			       <&tca9555_0 5 GPIO_ACTIVE_HIGH>,
+			       <&tca9555_0 9 GPIO_ACTIVE_HIGH>,
+			       <&tca9555_0 11 GPIO_ACTIVE_HIGH>,
+			       <&tca9555_0 15 GPIO_ACTIVE_HIGH>,
+			       <&tca9555_1 1 GPIO_ACTIVE_HIGH>,
+			       <&tca9555_1 5 GPIO_ACTIVE_HIGH>,
+			       <&tca9555_1 7 GPIO_ACTIVE_HIGH>;
+	/* SN74LVC1G66 gates connect the x2 socket presence to IX8024.
+	 * Slots 9 to 12. IX8024 P0..P3PWRENABLE drive the four regulators.
+	 * The separate x1 PERST# branches are NC on the V11 schematic.
+	 */
+	myt,slot-presence-gate-gpios = <&tca9555_1 3 GPIO_ACTIVE_HIGH>,
+				      <&tca9555_0 13 GPIO_ACTIVE_HIGH>,
+				      <&tca9555_0 1 GPIO_ACTIVE_HIGH>,
+				      <&tca9555_0 7 GPIO_ACTIVE_HIGH>;
+	max-payload = <256>;
+	sky1,fixed-mps = <256>;
+	linux,pci-domain = <3>;
+	/* Y12: contain PCIe errors without panicking the whole SoC. */
+	/delete-property/ sky1,aer-uncor-panic;
+	plat-evk;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_pcie_x8_rc>;
+	reset-gpios = <&s5_gpio0 3 GPIO_ACTIVE_HIGH>;	/* GPIO004 = SLT_X8_RST_L, 低复位 */
+	wake-gpios = <&s5_gpio0 7 GPIO_ACTIVE_HIGH>;
+	vcc-pcie-supply = <&vdd_pcie_x8>;	/* P1 侧 PCIe 供电 */
+	wlan-en-supply = <&vgfx_pwren>;		/* IX8024 核心供电, probe 前自动拉高 */
+	max-link-speed = <4>;			/* Gen4 */
+	status = "okay";
+};
+
+&pcie_x4_rc {
+	linux,pci-domain = <0>;
+	/* Y12: contain PCIe errors without panicking the whole SoC. */
+	/delete-property/ sky1,aer-uncor-panic;
+	plat-evk;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_pcie_x4_rc>;
+	reset-gpios = <&s5_gpio0 2 GPIO_ACTIVE_HIGH>;
+	status = "okay";
+};
+
+&pcie_x2_rc {
+	linux,pci-domain = <4>;
+	/* Keep correctable AER accounting on the dedicated RTL8127 root. */
+	myt,aer-log-ce-ratelimited;
+	/* Y12: contain PCIe errors without panicking the whole SoC. */
+	/delete-property/ sky1,aer-uncor-panic;
+	plat-evk;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_pcie_x2_rc>,<&pinctrl_4g_5g_disable>;
+	reset-gpios = <&s5_gpio0 1 GPIO_ACTIVE_HIGH>;
+	wake-gpios = <&s5_gpio0 11 GPIO_ACTIVE_LOW>;
+	max-link-speed = <4>;
+	num-lanes = <1>;	/* Y12 每个 RTL8127 只接 1 lane, 第二 lane 未使用 */
+	status = "okay";
+};
+
+&pcie_x1_0_rc {
+	linux,pci-domain = <2>;
+	/* Y12: contain PCIe errors without panicking the whole SoC. */
+	/delete-property/ sky1,aer-uncor-panic;
+	plat-evk;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_pcie_x1_0_rc>;
+	reset-gpios = <&s5_gpio0 4 GPIO_ACTIVE_HIGH>;
+	wake-gpios = <&s5_gpio0 8 GPIO_ACTIVE_LOW>;
+	max-link-speed = <4>;
+	status = "okay";
+};
+
+&pcie_x1_1_rc {
+	linux,pci-domain = <1>;
+	/* Y12: contain PCIe errors without panicking the whole SoC. */
+	/delete-property/ sky1,aer-uncor-panic;
+	plat-evk;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_pcie_x1_1_rc>;
+	reset-gpios = <&s5_gpio0 5 GPIO_ACTIVE_HIGH>;
+	wake-gpios = <&s5_gpio0 13 GPIO_ACTIVE_LOW>;
+	max-link-speed = <4>;
+	status = "okay";
+};
+
+&pcie0_phy {
+	status = "okay";
+};
+
+&pcie_x8_phy {
+	status = "okay";
+};
+
+&pcie1_phy {
+	status = "okay";
+};
+
+&pcie_x4_phy {
+	status = "okay";
+};
+
+&pciex211_phy {
+	status = "okay";
+};
+
+&pcie_x2_phy {
+	status = "okay";
+};
+
+&pcie_x1_phy0 {
+	status = "okay";
+};
+
+&pcie_x1_phy1 {
+	status = "okay";
+};
+
+&mbox_ap2pm {
+    status = "okay";
+};
+
+&mbox_pm2ap {
+    status = "okay";
+};
+
+&mbox_se2ap {
+	status = "okay";
+};
+
+&mbox_ap2se {
+	status = "okay";
+};
+
+&sky1_crash {
+	status = "okay";
+};
+
+&ap2pm_scmi_mem {
+    status = "okay";
+};
+
+&pm2ap_scmi_mem {
+    status = "okay";
+};
+
+&ap_tfa_scmi_mem {
+    status = "okay";
+};
+
+&ap_to_pm_scmi {
+    status = "okay";
+};
+
+&ap_to_tfa_scmi {
+    status = "okay";
+};
+
+&scmi_dvfs {
+    status = "okay";
+};
+
+&vpu {
+	status = "okay";
+};
+
+&ramoops {
+	status = "okay";
+};
+
+&watchdog {
+        status = "okay";
+};
+
+&cix_dst {
+	status = "okay";
+};
+
+&exception_trace {
+	status = "okay";
+};
+
+&ap_adapter {
+	status = "okay";
+};
+
+&mntndump {
+	status = "okay";
+};
+
+&ddr_ctrl0 {
+	status = "okay";
+};
+
+&ddr_ctrl1 {
+	status = "okay";
+};
+
+&ddr_ctrl2 {
+	status = "okay";
+};
+
+&ddr_ctrl3 {
+	status = "okay";
+};
+
+&cix_pmu_ci700 {
+	status = "disabled";
+};
+
+&cix_pmu_ni700 {
+	status = "disabled";
+};
+
+&cix_bus_ci700 {
+	status = "disabled";
+};
+
+&cix_bus_ni700 {
+	status = "disabled";
+};
+
+&dsu_cache_exception {
+	status = "okay";
+};
+
+&cache_exception_core4 {
+	status = "okay";
+};
+
+&cache_exception_core5 {
+	status = "okay";
+};
+
+&cache_exception_core6 {
+	status = "okay";
+};
+
+&cache_exception_core7 {
+	status = "okay";
+};
+
+&cache_exception_core8 {
+	status = "okay";
+};
+
+&cache_exception_core9 {
+	status = "okay";
+};
+
+&cache_exception_core10 {
+	status = "okay";
+};
+
+&cache_exception_core11 {
+	status = "okay";
+};
+
+&cix_ipa {
+	status = "okay";
+};
+
+/* TMP75 board temperature sensor on P1 PM_I2C3 (0x72) */
+&i2c3 {
+	tmp75: tmp75@72 {
+		compatible = "ti,tmp75";
+		reg = <0x72>;
+		status = "okay";
+	};
+};
+
+/* V2 schematic review (2026-10-21): four expanders are 0x20..0x23.
+ * IX8024 hot-plug is a 4x8 GPIO function (ATNLED/ATNBUTTON/MRL/RESET/
+ * PRSNT/PWRENABLE/PWRFAULT/PWRGOOD); the schematic exposes these through
+ * the expander/slot control nets. Keep EP_DET/INT_HOTPLUG unbound until the
+ * exact A9555 port and SoC interrupt routing is confirmed against the pin index.
+ */
+/*
+ * TCA9555 I/O expanders on P1 I2C1
+ * 槽位编号 = 板上物理位置: 第一行左→右 1~6 = J20,J19,J10,J4,J15,J16;
+ *            第二行左→右 7~12 = J23,J22,J21,J18,J1,J12 (与 MCU 固件寄存器编号一致)
+ * 0x20 = U55 (M.2 A~H PERST/PWREN; 字母=原理图编号: A=J1=槽11 B=J10=槽3 C=J4=槽4
+ *   D=J12=槽12 E=J15=槽5 F=J16=槽6 G=J18=槽10 H=J19=槽2)
+ * 0x21 = U58 (M.2 I~L PERST/PWREN + INT -> GPIO018 = s5_gpio1 line3: I=J20=槽1 J=J21=槽9 K=J22=槽8 L=J23=槽7
+ *   + MCU_RST/MCU_BOOT + VGFX_PWREN = SY8370TMC EN, IX8024 核心供电 IO_12)
+ * 0x22 = U57 按键 KEY1~12 (INT -> GPIO019 = s5_gpio1 line4; line n = KEY_n+1, 编号=SSD 通道序, 与物理槽位号不同)
+ * 0x23 = U69 运行灯 RUN_LED1~12 (line n = LED_n+1, 编号=SSD 通道序, 与物理槽位号不同)
+ * Note: ti,tca9555 not in pca953x of_match, use nxp,pca9555 (compatible)
+ */
+&i2c1 {
+	tca9555_0: tca9555@20 {
+		compatible = "nxp,pca9555";
+		reg = <0x20>;
+		gpio-controller;
+		#gpio-cells = <2>;
+		gpio-line-names = "nc", "slot11-presence-gate", "B-perst", "B-pwren", "C-perst", "C-pwren", "nc", "slot12-presence-gate", "E-perst", "E-pwren", "F-perst", "F-pwren", "nc", "slot10-presence-gate", "H-perst", "H-pwren";
+		status = "okay";
+	};
+
+	tca9555_1: tca9555@21 {
+		compatible = "nxp,pca9555";
+		reg = <0x21>;
+		gpio-controller;
+		#gpio-cells = <2>;
+		interrupt-parent = <&s5_gpio1>;
+		interrupts = <3 IRQ_TYPE_LEVEL_LOW>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_tca9555_21_int>;
+		gpio-line-names = "I-perst", "I-pwren", "nc", "slot9-presence-gate", "K-perst", "K-pwren", "L-perst", "L-pwren", "mcu-rst", "mcu-boot", "ix8024-pwren", "nc", "y12-slot2-present", "y12-slot1-present", "y12-slot8-present", "y12-slot7-present";
+		status = "okay";
+	};
+
+	tca9555_2: tca9555@22 {
+		compatible = "nxp,pca9555";
+		reg = <0x22>;
+		gpio-controller;
+		#gpio-cells = <2>;
+		interrupt-parent = <&s5_gpio1>;
+		interrupts = <4 IRQ_TYPE_LEVEL_LOW>;	/* GPIO019 = s5_gpio1 line4 */
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_tca9555_int>;
+		/* U57: KEY1-12 (IO_00~07, IO_10~13) + EP_DET B/C/E/F
+		 * (IO_14~17 = line 12~15, 对应物理槽位 3/4/5/6). */
+		gpio-line-names = "key1", "key2", "key3", "key4",
+				  "key5", "key6", "key7", "key8",
+				  "key9", "key10", "key11", "key12",
+				  "y12-slot3-present", "y12-slot4-present", "y12-slot5-present", "y12-slot6-present";
+		status = "okay";
+	};
+
+	tca9555_3: tca9555@23 {
+		compatible = "nxp,pca9555";
+		reg = <0x23>;
+		gpio-controller;
+		#gpio-cells = <2>;
+		status = "okay";
+	};
+};
+
+/*
+ * CIX FchTimerLib assigns FAN_OUT0 to timer 3 and FAN_OUT2 to timer 5.
+ * Its register address is 0x04110000 + timer * 0x1000.
+ * Verify both connector groups on the first hardware bring-up.
+ */
+&pwm3 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_fch_fan0>;
+	myt,keep-fan-pwm-running;
+	status = "okay";
+};
+
+&pwm5 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_fch_fan1>;
+	myt,keep-fan-pwm-running;
+	status = "okay";
+};
+
+/ {
+	/* hwmon fan1..3 are physical FAN2, FAN3, FAN5. */
+	pwm-fan-out0 {
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_tach0 &pinctrl_tach_fan5>;
+		interrupts-extended = <&fch_gpio1 25 IRQ_TYPE_EDGE_FALLING>,
+				      <&fch_gpio0 13 IRQ_TYPE_EDGE_FALLING>,
+				      <&s5_gpio0 14 IRQ_TYPE_EDGE_FALLING>;
+		pulses-per-revolution = <2 2 2>;
+		compatible = "myt,y12-soc-fan", "pwm-fan";
+		pwms = <&pwm3 0 40000>;
+	};
+
+	/* hwmon fan1..3 are physical FAN1, FAN4, FAN6. */
+	pwm-fan-out2 {
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_tach2 &pinctrl_tach_fan6>;
+		interrupts-extended = <&fch_gpio1 23 IRQ_TYPE_EDGE_FALLING>,
+				      <&fch_gpio0 12 IRQ_TYPE_EDGE_FALLING>,
+				      <&s5_gpio0 15 IRQ_TYPE_EDGE_FALLING>;
+		pulses-per-revolution = <2 2 2>;
+		compatible = "myt,y12-soc-fan", "pwm-fan";
+		pwms = <&pwm5 0 40000>;
+	};
+};
+
+/* Y12 CPU temperature zones for the kernel SoC fan policy.
+ * Sensor IDs follow the SCMI labels on this board:
+ *   CPU_M0=11, CPU_M1=9, CPU_B0=12, CPU_B1=10.
+ */
+&thermal_zones {
+	thermal_zone_cpu_m0: tz-cpu-m0 {
+		polling-delay-passive = <0>;
+		polling-delay = <0>;
+		thermal-sensors = <&scmi_sensor 10>;
+		trips {
+			cpu_m0_trip0: trip-point-0 {
+				temperature = <60000>;
+				hysteresis = <1000>;
+				type = "passive";
+			};
+			cpu_m0_trip1: trip-point-1 {
+				temperature = <85000>;
+				hysteresis = <1000>;
+				type = "passive";
+			};
+			cpu_m0_trip2: trip-point-2 {
+				temperature = <98000>;
+				hysteresis = <1000>;
+				type = "critical";
+			};
+		};
+	};
+
+	thermal_zone_cpu_m1: tz-cpu-m1 {
+		polling-delay-passive = <0>;
+		polling-delay = <0>;
+		thermal-sensors = <&scmi_sensor 8>;
+		trips {
+			cpu_m1_trip0: trip-point-0 {
+				temperature = <60000>;
+				hysteresis = <1000>;
+				type = "passive";
+			};
+			cpu_m1_trip1: trip-point-1 {
+				temperature = <85000>;
+				hysteresis = <1000>;
+				type = "passive";
+			};
+			cpu_m1_trip2: trip-point-2 {
+				temperature = <98000>;
+				hysteresis = <1000>;
+				type = "critical";
+			};
+		};
+	};
+
+	thermal_zone_cpu_b0: tz-cpu-b0 {
+		polling-delay-passive = <0>;
+		polling-delay = <0>;
+		thermal-sensors = <&scmi_sensor 11>;
+		trips {
+			cpu_b0_trip0: trip-point-0 {
+				temperature = <60000>;
+				hysteresis = <1000>;
+				type = "passive";
+			};
+			cpu_b0_trip1: trip-point-1 {
+				temperature = <85000>;
+				hysteresis = <1000>;
+				type = "passive";
+			};
+			cpu_b0_trip2: trip-point-2 {
+				temperature = <98000>;
+				hysteresis = <1000>;
+				type = "critical";
+			};
+		};
+	};
+
+	thermal_zone_cpu_b1: tz-cpu-b1 {
+		polling-delay-passive = <0>;
+		polling-delay = <0>;
+		thermal-sensors = <&scmi_sensor 9>;
+		trips {
+			cpu_b1_trip0: trip-point-0 {
+				temperature = <60000>;
+				hysteresis = <1000>;
+				type = "passive";
+			};
+			cpu_b1_trip1: trip-point-1 {
+				temperature = <85000>;
+				hysteresis = <1000>;
+				type = "passive";
+			};
+			cpu_b1_trip2: trip-point-2 {
+				temperature = <98000>;
+				hysteresis = <1000>;
+				type = "critical";
+			};
+		};
+	};
+};
+
+/ {
+	/*
+	 * Board maintenance wiring. Both lines are asserted high at the
+	 * expander; reset inverts externally before reaching MCU NRST.
+	 */
+	mcu-maintenance {
+		reset-gpios = <&tca9555_1 8 GPIO_ACTIVE_HIGH>;
+		boot-gpios = <&tca9555_1 9 GPIO_ACTIVE_HIGH>;
+	};
+
+	myt_slot_hotplug: myt-slot-hotplug {
+		compatible = "myt,y12-slot-hotplug";
+		/* Physical slot numbers for the GPIO arrays below, in order. */
+		myt,physical-slots = <3 4 5 6 2 1 8 7>;
+		perst-gpios = <&tca9555_0 2 0>, <&tca9555_0 4 0>, <&tca9555_0 8 0>, <&tca9555_0 10 0>, <&tca9555_0 14 0>, <&tca9555_1 0 0>, <&tca9555_1 4 0>, <&tca9555_1 6 0>;
+		det-gpios = <&tca9555_2 12 GPIO_ACTIVE_LOW>, <&tca9555_2 13 GPIO_ACTIVE_LOW>, <&tca9555_2 14 GPIO_ACTIVE_LOW>, <&tca9555_2 15 GPIO_ACTIVE_LOW>, <&tca9555_1 12 GPIO_ACTIVE_LOW>, <&tca9555_1 13 GPIO_ACTIVE_LOW>, <&tca9555_1 14 GPIO_ACTIVE_LOW>, <&tca9555_1 15 GPIO_ACTIVE_LOW>;
+		status = "okay";
+	};
+};
+
+#include "sky1-myt-cp6187.dtsi"

@@ -1,0 +1,11 @@
+# SPDX-License-Identifier: GPL-2.0-only
+source "drivers/media/platform/cix/linlon-aeu/Kconfig"
+
+config VIDEO_LINLON
+	tristate "CiX Linlon VPU driver (amvx)"
+	depends on VIDEO_DEV
+	select VIDEOBUF2_DMA_SG
+	select FW_LOADER
+	help
+	  V4L2 stateful memory-to-memory driver for the CiX Linlon VPU.
+	  Provides H.264/HEVC hardware encode and decode.
