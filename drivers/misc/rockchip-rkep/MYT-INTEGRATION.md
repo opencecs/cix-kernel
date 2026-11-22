@@ -8,7 +8,7 @@ archive version are separate from the endpoint's BAR0 protocol version.
 
 ## Host integration
 
-Both products build `CONFIG_MYT_RK182X=m`. Since kernel commit `91a3861ff`, the host uses the vendor probe flow. The PCI aliases match `1d87:182a` and `1d87:356a`. The module enables the PCI function and bus mastering, requests its regions, maps BAR0 and BAR2, and maps BAR4 when present. It registers one misc device per PCI function. Use the node for the card's actual BDF, for example `/dev/pcie-rkep-0000:e1:00.0`.
+Both products build `CONFIG_MYT_RK182X=m`. The host uses the vendor probe flow. The PCI aliases match `1d87:182a` and `1d87:356a`. The module enables the PCI function and bus mastering, requests its regions, maps BAR0 and BAR2, and maps BAR4 when present. It registers one misc device per PCI function. Use the node for the card's actual BDF, for example `/dev/pcie-rkep-0000:e1:00.0`.
 
 The released module has no `endpoint_abi` parameter or separate discovery-only mode. See [pcie-rkep.c](pcie-rkep.c) and [rk-pcie-ep.h](rk-pcie-ep.h) for the implemented ioctls, including DMA and slot reset. A successful probe confirms host binding. Firmware compatibility, inference, and recovery require separate testing with the matching card and SDK.
 
@@ -24,7 +24,7 @@ The [DMA regression test](../../../tools/testing/selftests/drivers/rkep/README.m
 
 ## Userspace and validation
 
-The host supplies the kernel module and device nodes. The deployment container supplies the endpoint firmware, runtime, models, and associated tools. The rootfs recipe and host policy live in the [Debian system repository](https://gitlab.moyunteng.com/myt-y4-y12/debian-y4).
+The host supplies the kernel module and device nodes. The deployment container supplies the endpoint firmware, runtime, models, and associated tools. The rootfs recipe and host policy live in the [cix-rootfs repository](https://github.com/opencecs/cix-rootfs).
 
 For a host binding check, use `lspci -nnk` and enumerate `/dev/pcie-rkep-*`. Match each complete domain:bus:device.function to a single node. Use `modinfo -p pcie-rkep` to check the parameters of the installed module. These checks do not require an endpoint reset or firmware download.
 

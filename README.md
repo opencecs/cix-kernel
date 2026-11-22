@@ -18,16 +18,11 @@ Y4 V11 的物理 FAN1 在 UEFI 使用 50% PWM。Linux 驱动在启动保护期�
 
 Y4 V11 的 DP0 接 J8、DP2 接 CON1。设备树关闭未引出的 DP1 及其专用音频、显示管线和 DP PHY。GNOME 虚拟桌面由系统图形栈提供，独立于这两个物理接口。
 
-按下文准备同一份 ARM64 `.config`，再分别生成板型 bundle。第五个参数为 `Y4` 或 `Y12`。
-对象树只为同一源码提交和同一配置复用，两条命令顺序运行。每个 bundle 目录必须是新目录。
-
-完整流程见[双板构建手册](https://github.com/opencecs/myt-edge/blob/main/docs/DUAL-BOARD-BUILD.md)。共用 main，板型由构建配置选择。
-
 ## 常用入口
 
 | 路径 | 用途 |
 | --- | --- |
-| configs/ | Y4 完整配置及配置片段，先读 [配置说明](configs/README.md) |
+| configs/ | 6.6.89 参考配置和选项片段，见 [配置说明](configs/README.md) |
 | arch/arm64/boot/dts/cix/ | Sky1 公共核心板及 Y4、Y12 板级设备树 |
 | drivers/pci/ | PCIe 控制器、枚举和策略 |
 | drivers/rtc/ | RTC 驱动 |
@@ -38,25 +33,26 @@ Y4 V11 的 DP0 接 J8、DP2 接 CON1。设备树关闭未引出的 DP1 及其专
 
 ## 构建当前内核包
 
-在 Linux 上准备 ARM64 交叉编译器和标准内核构建工具。使用 `CROSS_COMPILE` 指定工具链前缀，默认是 `aarch64-none-linux-gnu-`。选择板型 `Y4` 或 `Y12`。
+在 Linux 上使用 ARM64 交叉工具链，并检出整机发布清单记录的内核提交。正式整机构建使用对应板型的已验收内核 bundle，按 `SHA256SUMS` 校验后传给 MYT Edge 的 `--kernel-bundle`。应配套提供该 bundle 及其中的 `config-<kernel.release>`，便于同一版的开发和验证。公开版与内部版的整机组装步骤见[双板构建手册](https://github.com/opencecs/myt-edge/blob/main/docs/DUAL-BOARD-BUILD.md)。
+
+以下命令使用已验收的完整配置从源码重建内核。在本仓库根目录运行。将 `QUALIFIED_CONFIG` 设为该配置文件，`OBJECTS` 设为新对象目录，`BUNDLE` 设为尚不存在的输出目录，`BOARD` 设为 `Y4` 或 `Y12`。
 
 ```sh
+CROSS_COMPILE="${CROSS_COMPILE:-aarch64-none-linux-gnu-}"
 mkdir -p "$OBJECTS"
-make O="$OBJECTS" ARCH=arm64 CROSS_COMPILE="$CROSS_COMPILE" cix.config
-scripts/kconfig/merge_config.sh -m -O "$OBJECTS" "$OBJECTS/.config" debian.config
+install -m 0644 "$QUALIFIED_CONFIG" "$OBJECTS/.config"
 make O="$OBJECTS" ARCH=arm64 CROSS_COMPILE="$CROSS_COMPILE" olddefconfig
 CROSS_COMPILE="$CROSS_COMPILE" scripts/build-y4-bundle.sh "$PWD" "$OBJECTS" "$BUNDLE" "" "$BOARD"
+(cd "$BUNDLE" && sha256sum -c SHA256SUMS)
 ```
 
-`OBJECTS` 是内核对象目录，`BUNDLE` 必须是新路径。空的第四个参数省略厂商 PG 编程模块。输出含 Image、对应板型 DTB、模块归档、内核配置和摘要。用私有工厂流程时才传入 PG 源码目录。
-
-将符合 rootfs 兼容性清单的 bundle 传给 [MYT Edge 整机构建](https://github.com/opencecs/myt-edge/blob/main/docs/DUAL-BOARD-BUILD.md) 的 `--kernel-bundle`。若自行编译的内核摘要发生变化，须验证与根文件系统硬件功能的兼容性后再更新清单。
+空的第四个参数用于普通系统内核，保留网卡运行驱动。PG 模块只用于内部工厂构建，输入由工厂流程单独提供。bundle 包含 `Image`、板型匹配的 DTB、内核模块归档、完整配置、`kernel.release` 和校验清单。两板可复用同一源码提交和配置生成的对象目录，分别指定不同的 `BUNDLE`，顺序生成。
 
 ## 验证与交付
 
-先做与修改相关的编译/静态检查，再按影响范围上机核对 Image/DTB/模块版本、dmesg、AER、服务和重启。PCIe 目标是 M50/Optane 交换树稳定 MPS/MRRS 256/256，不回退 128；独立根口按实际设计保留配置。
+重建后的内核如与根文件系统清单的摘要不同，先验证驱动和用户态兼容性，再更新对应板型的 [内核输入清单](https://github.com/opencecs/cix-rootfs/tree/main/fetch)。记录源码提交、配置、工具链、各产物摘要以及实机验收范围。核对内核和 DTB 版本、模块加载、网络、PCIe 和重启结果。PCIe 交换树的 MPS/MRRS 验证目标为 256/256。
 
-内核 bundle 不是完整刷机包，也不是可直接上传的系统 OTA。整机构建从内核 bundle 取 Image、DTB 和模块。板级固件由 UEFI 构建提供，在全量包中为 `images/myt-spi.bin`。系统 OTA 随 rootfs 提供配套内核。分别记录源码、校验和与实机验收范围。[整机刷写说明](https://github.com/opencecs/myt-edge/blob/main/docs/BUILD-AND-FLASH-GUIDE.md#4a-完整刷机包)
+整机 Fastboot 全量包由 MYT Edge 组装，内含系统盘镜像和板型匹配的 `images/myt-spi.bin`。系统 OTA 升级根文件系统及其配套内核，由设备校验板型、版本和签名。已签名 MCU 制品随系统交付，签名由内部流程完成。安装步骤见[整机刷写和 OTA 指南](https://github.com/opencecs/myt-edge/blob/main/docs/BUILD-AND-FLASH-GUIDE.md)。
 
 ### Y4 / Y12 加速器运行时电源策略
 

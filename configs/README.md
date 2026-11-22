@@ -1,30 +1,13 @@
-# Y4 6.6.89 编译配置
+# 6.6.89 内核配置参考
 
-本目录是 Y4（CIX Sky1 / CP8187）6.6.89 内核的专用配置，配合内核树使用。
+Y4 和 Y12 的正式整机构建使用各自已验收的内核 bundle。需要从源码重建时，使用对应 bundle 中的 `config-<kernel.release>`，按[内核构建说明](../README.md#构建当前内核包)生成镜像、设备树和模块。
 
-| 文件 | 作用 |
-|---|---|
-| `base-6.6.89.config` | 完整不动点配置；直接作为 `.config` 使用即可复现构建 |
-| `board-6.6.89.config` | Y4 板级选项片段（Mali/VPU/R8127 等） |
-| `debian.config` | Debian/产品选项片段（如 `CONFIG_XH2A_DRV=n`） |
+这里的文件记录 6.6.89 的参考配置和功能选项。它们可供维护与对比，当前正式构建的完整选项以已验收 bundle 为准。
 
-推荐构建方式（直接用完整配置）：
+| 文件 | 内容 |
+| --- | --- |
+| `base-6.6.89.config` | 早期完整配置参考 |
+| `board-6.6.89.config` | Mali、VPU、网卡、片上 NPU 等板级功能选项 |
+| `debian.config` | Debian 文件系统、容器、网络和 PWM 等选项参考 |
 
-    cp configs/base-6.6.89.config <obj>/.config
-    make -C <kernel> O=<obj> ARCH=arm64 CROSS_COMPILE=<toolchain>- olddefconfig
-    make -C <kernel> O=<obj> ARCH=arm64 CROSS_COMPILE=<toolchain>- Image modules dtbs
-
-维护/重新生成 `base-6.6.89.config` 时，用四个输入合并（厂商配置在树内）：
-
-    merge_config.sh -m -O <obj> \
-      configs/base-6.6.89.config \
-      <kernel>/arch/arm64/configs/cix.config \
-      configs/board-6.6.89.config \
-      configs/debian.config
-    make -C <kernel> O=<obj> ARCH=arm64 CROSS_COMPILE=<toolchain>- olddefconfig
-
-注意：
-
-- `arch/arm64/configs/cix.config` 是内核树内的 CIX 厂商配置，不在本目录重复。
-- 本目录只放 Y4/Debian 专用配置；6.1 基线、厂商参考副本和迁移记录不在此处。
-- 实际构建编排脚本由独立的编译脚本仓库维护；本目录只提供配置。
+仓库根目录的 `debian.config` 是独立的产品配置片段。`arch/arm64/configs/cix.config` 是树内的 CIX 基础配置。用完整发布配置开始重建后，修改某个功能时，再按需要比较具体选项与已验收配置的差异。
