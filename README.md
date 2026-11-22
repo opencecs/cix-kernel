@@ -11,8 +11,8 @@ M50 和 RK182X 主机驱动由两板共用。RK182X 的 PCI ID 匹配且 probe �
 
 | 板型 | DTB | PCIe 和风扇 |
 | --- | --- | --- |
-| Y4 | `sky1-y4.dtb` | IX8024 四个 Gen4 ×4 槽。独立 FAN1 由 SoC 控制。FAN3–5 的 PWM 和测速归 MCU |
-| Y12 | `sky1-y12.dtb` | IX8024 四个 Gen4 ×2 加八个 Gen4 ×1，八路槽 EN 归 TCA9555；两组 SoC PWM、六路测速 |
+| Y4 | `sky1-y4.dtb` | PCIe 交换机提供四个 Gen4 ×4 槽。独立 FAN1 由 SoC 控制。FAN3–5 的 PWM 和测速归 MCU |
+| Y12 | `sky1-y12.dtb` | PCIe 交换机提供四个 Gen4 ×2 加八个 Gen4 ×1，八路槽 EN 归 TCA9555；两组 SoC PWM、六路测速 |
 
 Y4 V11 的物理 FAN1 在 UEFI 使用 50% PWM。Linux 驱动在启动保护期间使用全速，温度与测速有效后，SoC 低于 45 °C 使用 30%，45 °C 至低于 70 °C 使用 50%，70 °C 起使用 100%。传感器失效等保护条件见 [FAN1 策略](drivers/hwmon/pwm-fan-y4-policy.h)。MCU 的风扇 1–3 对应物理 FAN3–5，默认 20%。
 

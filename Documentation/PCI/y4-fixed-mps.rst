@@ -9,7 +9,7 @@ It must also specify max-payload = <256>. The property fixes both MPS
 and MRRS throughout that host's hierarchy. Other Y4 hosts continue using
 the existing automatic policy.
 
-This supports the IX8024 fabric with M50 and Optane endpoints, whose
+This supports the PCIe switch topology with M50 and Optane endpoints, whose
 maximum supported payload is 256 bytes. It does not change link speed,
 link width, DMA masks, coherency, AER masks, or hotplug resource reservation.
 The firmware/hardware reset value is outside the OS policy; the kernel
@@ -88,8 +88,9 @@ throughout a test run. Record the kernel release and artifact SHA-256.
 For every boot, check the host-relative topology, not hard-coded BDFs:
 preserving hotplug bridge flags can change bus-number allocation.
 
-The expected fixed tree is one CIX root port, five IX8024 bridge functions,
-one M50 and three Optane endpoints. Every function must read back 256/256.
+The expected fixed tree is one CIX root port, five PCIe switch bridge
+functions, one M50 and three Optane endpoints. Every function must read
+back 256/256.
 
 Check initial boot, repeated warm reboots, actual removal and restoration
 of external power, NVMe concurrent access, and remove/rescan of an idle
@@ -113,6 +114,6 @@ count of omitted samples. Interrupt acknowledgment, status handling and AER
 statistics still run for each event. Uncorrectable diagnostics remain visible.
 
 Y4 declares a 4 MiB minimum non-prefetchable window per downstream hotplug
-bridge under the IX8024 root. The M50 uses three 1 MiB BARs and may arrive
-after the initial bus scan. Other PCI roots and Y12 use the normal PCI
-resource policy.
+bridge in the PCIe switch hierarchy. The M50 uses three 1 MiB BARs and
+may arrive after the initial bus scan. Other PCI roots and Y12 use the
+normal PCI resource policy.
