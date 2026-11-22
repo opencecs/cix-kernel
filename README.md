@@ -1,6 +1,6 @@
-# Y4 / Y12 Linux 内核
+# MYT Edge CIX Linux 内核
 
-当前整机版本和验证边界见 [Y4/Y12 开发交接](https://github.com/opencecs/myt-edge/blob/main/docs/DEVELOPMENT-HANDOFF.md)。
+本仓库的 GitHub `main` 是 Y4、Y12 共用的内核开发和构建入口。整机版本和验证边界见 [Y4/Y12 开发交接](https://github.com/opencecs/myt-edge/blob/main/docs/DEVELOPMENT-HANDOFF.md)。
 M50 和 RK182X 主机驱动由两板共用。RK182X 的 PCI ID 匹配且 probe 成功后，每张卡有一个 `/dev/pcie-rkep-<BDF>`。容器按 PCI 地址选择设备。现行接口见 [RK182X 主机驱动说明](drivers/misc/rockchip-rkep/MYT-INTEGRATION.md)。
 
 ## Y4 / Y12 编译与板型分工
@@ -34,13 +34,14 @@ Y4 V11 的 DP0 接 J8、DP2 接 CON1。设备树关闭未引出的 DP1 及其专
 | kernel/printk/ | 内核日志产生、控制台与 /dev/kmsg |
 | scripts/build-y4-bundle.sh | 当前 6.6 内核 bundle 生成入口 |
 
-设备树、驱动和配置在本仓库修改；系统服务/应用去 debian-y4，总构建和板载服务去 tools。只使用 main，按明确文件提交，保留已有工作区改动。
+设备树、驱动和内核配置在本仓库修改。系统服务和用户空间配置由 [cix-rootfs](https://github.com/opencecs/cix-rootfs) 维护。整机构建和板载服务由 [myt-edge](https://github.com/opencecs/myt-edge) 维护。公开与内部构建都从这三个 GitHub 仓库固定提交。
 
 ## 构建当前内核包
 
 在 Linux 上准备 ARM64 交叉编译器和标准内核构建工具。使用 `CROSS_COMPILE` 指定工具链前缀，默认是 `aarch64-none-linux-gnu-`。选择板型 `Y4` 或 `Y12`。
 
 ```sh
+mkdir -p "$OBJECTS"
 make O="$OBJECTS" ARCH=arm64 CROSS_COMPILE="$CROSS_COMPILE" cix.config
 scripts/kconfig/merge_config.sh -m -O "$OBJECTS" "$OBJECTS/.config" debian.config
 make O="$OBJECTS" ARCH=arm64 CROSS_COMPILE="$CROSS_COMPILE" olddefconfig
