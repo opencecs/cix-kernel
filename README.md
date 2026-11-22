@@ -1,6 +1,6 @@
 # Y4 / Y12 Linux 内核
 
-当前整机版本和验证边界见 [Y4/Y12 开发交接](https://gitlab.moyunteng.com/myt-y4-y12/tools/-/blob/main/docs/DEVELOPMENT-HANDOFF.md)。
+当前整机版本和验证边界见 [Y4/Y12 开发交接](https://github.com/opencecs/myt-edge/blob/main/docs/DEVELOPMENT-HANDOFF.md)。
 M50 和 RK182X 主机驱动由两板共用。RK182X 的 PCI ID 匹配且 probe 成功后，每张卡有一个 `/dev/pcie-rkep-<BDF>`。容器按 PCI 地址选择设备。现行接口见 [RK182X 主机驱动说明](drivers/misc/rockchip-rkep/MYT-INTEGRATION.md)。
 
 ## Y4 / Y12 编译与板型分工
@@ -21,7 +21,7 @@ Y4 V11 的 DP0 接 J8、DP2 接 CON1。设备树关闭未引出的 DP1 及其专
 按下文准备同一份 ARM64 `.config`，再分别生成板型 bundle。第五个参数为 `Y4` 或 `Y12`。
 对象树只为同一源码提交和同一配置复用，两条命令顺序运行。每个 bundle 目录必须是新目录。
 
-完整流程见[双板构建手册](https://gitlab.moyunteng.com/myt-y4-y12/tools/-/blob/main/docs/DUAL-BOARD-BUILD.md)。共用 main，板型由构建配置选择。
+完整流程见[双板构建手册](https://github.com/opencecs/myt-edge/blob/main/docs/DUAL-BOARD-BUILD.md)。共用 main，板型由构建配置选择。
 
 ## 常用入口
 
@@ -36,48 +36,26 @@ Y4 V11 的 DP0 接 J8、DP2 接 CON1。设备树关闭未引出的 DP1 及其专
 
 设备树、驱动和配置在本仓库修改；系统服务/应用去 debian-y4，总构建和板载服务去 tools。只使用 main，按明确文件提交，保留已有工作区改动。
 
-## 当前 6.6 构建方式
+## 构建当前内核包
 
-以下在现有 Linux 编译服务器上执行，仅在需要构建时运行。依赖 /Y4/repo/rootfs/dependencies/kernel-toolchain-12.3；源码与配置先提交并记录 SHA。
+在 Linux 上准备 ARM64 交叉编译器和标准内核构建工具。使用 `CROSS_COMPILE` 指定工具链前缀，默认是 `aarch64-none-linux-gnu-`。选择板型 `Y4` 或 `Y12`。
 
-~~~bash
-set -e
-src=/Y4/src/kernel
-work=$(mktemp -d /Y4/builds/kernel-6.6-XXXXXXXX)
-objects="$work/objects"
-out_y4="$work/kernel-Y4"
-out_y12="$work/kernel-Y12"
-pgsrc="$work/pg-source"
-mkdir "$work/objects"
-cp "$src/configs/base-6.6.89.config" "$objects/.config"
-"$src/scripts/config" --file "$objects/.config" \
-    -d PCIEASPM_DEFAULT -d PCIEASPM_POWERSAVE -d PCIEASPM_POWER_SUPERSAVE \
-    -e PCIEASPM_PERFORMANCE
-export PATH="/Y4/repo/rootfs/dependencies/kernel-toolchain-12.3/bin:$PATH"
-make -C "$src" O="$work/objects" ARCH=arm64 \
-    CROSS_COMPILE=aarch64-none-linux-gnu- LOCALVERSION=-generic olddefconfig
+```sh
+make O="$OBJECTS" ARCH=arm64 CROSS_COMPILE="$CROSS_COMPILE" cix.config
+scripts/kconfig/merge_config.sh -m -O "$OBJECTS" "$OBJECTS/.config" debian.config
+make O="$OBJECTS" ARCH=arm64 CROSS_COMPILE="$CROSS_COMPILE" olddefconfig
+CROSS_COMPILE="$CROSS_COMPILE" scripts/build-y4-bundle.sh "$PWD" "$OBJECTS" "$BUNDLE" "" "$BOARD"
+```
 
-# PG 模块使用私有副本，避免修改公共输入里的生成文件。
-cp -a /Y4/src/tools/inputs/realtek-pg-cix-20261026/source "$pgsrc"
-bash "$src/scripts/build-y4-bundle.sh" "$src" "$objects" "$out_y4" "$pgsrc" Y4
-bash "$src/scripts/build-y4-bundle.sh" "$src" "$objects" "$out_y12" "$pgsrc" Y12
-(cd "$out_y4" && sha256sum -c SHA256SUMS)
-(cd "$out_y12" && sha256sum -c SHA256SUMS)
-~~~
+`OBJECTS` 是内核对象目录，`BUNDLE` 必须是新路径。空的第四个参数省略厂商 PG 编程模块。输出含 Image、对应板型 DTB、模块归档、内核配置和摘要。用私有工厂流程时才传入 PG 源码目录。
 
-bundle 生成脚本要求输出目录尚不存在。编译期间不要同时修改源码；保留配置、来源提交和构建日志。
-
-bundle 含 Image、选定板型 DTB、模块归档、配置、System.map、kernel.release、SHA256SUMS 和 RELEASE.md。以实际脚本产物与校验清单为准。
-
-随后将该 bundle 作为组合树构建的 boards.<型号>.inputs.kernel_bundle，或传入 `--kernel-bundle <路径>`。完整系统构建不会因为 kernel/main 有新提交而自动更新旧 bundle。
-
-tools/scripts/build.py 的 `--kernel-source-build` 仍是历史 6.1 路径，不能用于当前 6.6。总固件流程见 [构建与交付指南](https://gitlab.moyunteng.com/myt-y4-y12/tools/-/blob/main/docs/BUILD-AND-FLASH-GUIDE.md)。
+将符合 rootfs 兼容性清单的 bundle 传给 [MYT Edge 整机构建](https://github.com/opencecs/myt-edge/blob/main/docs/DUAL-BOARD-BUILD.md) 的 `--kernel-bundle`。若自行编译的内核摘要发生变化，须验证与根文件系统硬件功能的兼容性后再更新清单。
 
 ## 验证与交付
 
 先做与修改相关的编译/静态检查，再按影响范围上机核对 Image/DTB/模块版本、dmesg、AER、服务和重启。PCIe 目标是 M50/Optane 交换树稳定 MPS/MRRS 256/256，不回退 128；独立根口按实际设计保留配置。
 
-内核 bundle 不是完整刷机包，也不是可直接上传的系统 OTA。整机构建从内核 bundle 取 Image、DTB 和模块。板级固件由 UEFI 构建提供，在全量包中为 `images/myt-spi.bin`。系统 OTA 随 rootfs 提供配套内核。分别记录源码、校验和与实机验收范围。[整机刷写说明](https://gitlab.moyunteng.com/myt-y4-y12/tools/-/blob/main/docs/BUILD-AND-FLASH-GUIDE.md#4a-完整刷机包)
+内核 bundle 不是完整刷机包，也不是可直接上传的系统 OTA。整机构建从内核 bundle 取 Image、DTB 和模块。板级固件由 UEFI 构建提供，在全量包中为 `images/myt-spi.bin`。系统 OTA 随 rootfs 提供配套内核。分别记录源码、校验和与实机验收范围。[整机刷写说明](https://github.com/opencecs/myt-edge/blob/main/docs/BUILD-AND-FLASH-GUIDE.md#4a-完整刷机包)
 
 ### Y4 / Y12 加速器运行时电源策略
 
