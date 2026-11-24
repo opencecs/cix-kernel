@@ -47,6 +47,7 @@
 #include "mvx_log_group.h"
 
 #define V4L2_MVX_COLORIMETRY_UNSUPPORTED (-1)
+#define MVX_CICP_TRANSFER_SMPTE170M 6
 
 static const unsigned int range_map[] = {
     V4L2_QUANTIZATION_DEFAULT,
@@ -76,7 +77,7 @@ static const unsigned int xfer_map[] = {
     V4L2_MVX_COLORIMETRY_UNSUPPORTED,
     V4L2_XFER_FUNC_GAMMA22,             /*Assumed display gamma 2.2. Rec. ITU-R BT.470-6 System M*/
     V4L2_XFER_FUNC_GAMMA28,             /*Assumed display gamma 2.8. Rec. Rec. ITU-R BT.470-6 System B, G*/
-    V4L2_XFER_FUNC_709,                 /*SMPTE170M*/
+    [MVX_CICP_TRANSFER_SMPTE170M] = V4L2_XFER_FUNC_709,
     V4L2_XFER_FUNC_SMPTE240M,           /*SMPTE240M*/
     V4L2_XFER_FUNC_NONE,                /*Linear transfer characteristics*/
     V4L2_MVX_COLORIMETRY_UNSUPPORTED,
@@ -881,8 +882,17 @@ int mvx_v4l2_session_set_color_info(struct mvx_v4l2_session *vsession,
                         V4L2_COLORSPACE_REC709 : pix->colorspace;
     cd.colour_primaries =
         get_u32_array_index(primaries_map, ARRAY_SIZE(primaries_map), flex_colorspace);
-    cd.transfer_characteristics =
-        get_u32_array_index(xfer_map, ARRAY_SIZE(xfer_map), pix->xfer_func);
+    /*
+     * V4L2 uses the same transfer function for Rec. 709 and SMPTE 170M,
+     * but CICP distinguishes them. Match the SMPTE 170M input primaries
+     * instead of selecting the first V4L2_XFER_FUNC_709 entry.
+     */
+    if (pix->colorspace == V4L2_COLORSPACE_SMPTE170M &&
+        pix->xfer_func == V4L2_XFER_FUNC_709)
+        cd.transfer_characteristics = MVX_CICP_TRANSFER_SMPTE170M;
+    else
+        cd.transfer_characteristics =
+            get_u32_array_index(xfer_map, ARRAY_SIZE(xfer_map), pix->xfer_func);
     cd.matrix_coeff =
         get_u32_array_index(matrix_map, ARRAY_SIZE(matrix_map), pix->ycbcr_enc);
     cd.range =
